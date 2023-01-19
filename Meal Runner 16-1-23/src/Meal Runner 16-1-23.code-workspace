@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"name": "Meal Runner 16-1-23",
+			"path": ".."
+		},
+		{
+			"name": "ArduTesting",
+			"path": "../../../../Documents/PlatformIO/Projects/ArduTesting"
+		},
+		{
+			"name": "Kooks",
+			"path": "../../Kooks"
+		}
+	],
+	"settings": {}
+}
