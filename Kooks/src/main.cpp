@@ -71,6 +71,8 @@ void TeaRecipe(int tp, int sp, int tm, int st, int mn, int ps) {
   delay(500);
   SlowButton(mn, 2000);    // PLUS
   delay(500);
+  QuickButton(ps);
+  delay(500);
   //  Set Speed to MIN
 
   QuickButton(tm);   // SELECT TEMP  
@@ -96,7 +98,6 @@ void loop() {
     Serial.println(a);
   
     if( a == 5) { TeaRecipe(0,1,2,3,4,5);}
-    else if( a == 10){  a=0;}
 
     start = millis();
   }
