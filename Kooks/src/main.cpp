@@ -77,7 +77,7 @@ void TeaRecipe(int tp, int sp, int tm, int st, int mn, int ps) {
 
   QuickButton(tm);   // SELECT TEMP  
   delay(500);
-  SlowButton(ps, 5500);    // PLUS
+  SlowButton(ps, 2000);    // PLUS
   delay(500);
   //  Set Speed to MIN
 
