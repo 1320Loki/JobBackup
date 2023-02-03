@@ -29,8 +29,9 @@ int l2=2;
 #define In4 4
 
 //  POSITIONING
-#define SensPin 9
-int Pos = 0;
+#define BPin 9
+bool Returning = false;
+int Pos = 0, valid = 0, Side = 0;
 int BtCont = 0, BtState = 0, LastBtState = 0;
 
 // MILLIS FUNCTION
@@ -169,29 +170,10 @@ void setup() {
 
 void loop() {
 
-
-
-}
-
-
-
-
-
-/*
-
-MovePositive();
-delay(100);
-
-/////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
-void loop() {
-
   current = millis();
   if(current - start >= period1)
   {
     Serial.println("IDLE");
-    digitalWrite(l1, LOW);
     digitalWrite(l2, LOW);
     MotorIdle();
     servoReset();
@@ -219,7 +201,6 @@ void loop() {
     Serial.print("Valor Contador = ");
     Serial.println(BtCont);   
 
-    digitalWrite(l1, HIGH);
     digitalWrite(l2, HIGH);
 
     switch (Pos)
@@ -355,6 +336,7 @@ void loop() {
             Serial.println("P inicial");
             break;
           }
+
           delay(500);
         }
         break;
@@ -364,7 +346,3 @@ void loop() {
     delay(500);
   }
 }
-/////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
-*/
