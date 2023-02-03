@@ -24,13 +24,7 @@ const char* password = "esp32wish";
 WiFiServer server(80);
 String header;
 
-// Auxiliar variables to store the current output state
-String output26State = "off";
-String output27State = "off";
 
-// Assign output variables to GPIO pins
-const int output26 = 26;
-const int output27 = 27;
 
 // MILLIS FUNCTION
 unsigned long currentTime = millis();   // Current time
@@ -42,10 +36,6 @@ const long timeoutTime = 2000;          // Define timeout (example: 2000ms = 2s)
 void setup() {
 
   Serial.begin(115200);
-  pinMode(output26, OUTPUT);
-  pinMode(output27, OUTPUT);
-  digitalWrite(output26, LOW);
-  digitalWrite(output27, LOW);
 
   //  WIFI CONNECTION
   Serial.print("Connecting to ");
