@@ -97,30 +97,17 @@ void loop() {
             client.println("Connection: close");        //  CLOSE THE CONNECTION
             client.println();
             
-            // GPIO CONTROL     MUST CHANGE THIS PART
-            if (header.indexOf("GET /26/on") >= 0) {
-              Serial.println("GPIO 26 on");
-              output26State = "1";
-              digitalWrite(output26, HIGH);
-              Serial.println(output26State);
-            } 
-            
-            else if (header.indexOf("GET /26/off") >= 0) {
-              Serial.println("GPIO 26 off");
-              output26State = "off";
-              digitalWrite(output26, LOW);
-            } 
-            
-            else if (header.indexOf("GET /27/on") >= 0) {
-              Serial.println("GPIO 27 on");
-              output27State = "on";
-              digitalWrite(output27, HIGH);
-            } 
-            
-            else if (header.indexOf("GET /27/off") >= 0) {
-              Serial.println("GPIO 27 off");
-              output27State = "off";
-              digitalWrite(output27, LOW);
+            //  AVISO HTML
+            if (header.indexOf("GET /d1") >= 0) {
+              Serial.println("Distancia 1 selected");
+            }
+
+            else if (header.indexOf("GET /d2") >= 0) {
+              Serial.println("Distancia 2 selected");
+            }
+
+            else if (header.indexOf("GET /d3") >= 0) {
+              Serial.println("Distancia 3 selected");
             }
             
 // --------------------------- Display the HTML web page --------------------------- //
@@ -131,40 +118,28 @@ void loop() {
 
             //  CCS STYLE TO ON/OFF BUTTONS
             client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}");
-            client.println(".button { background-color: #4CAF50; border: none; color: white; padding: 16px 40px;");
+            client.println(".button { background-color: #0c6306; border: none; color: white; padding: 16px 40px;");
             client.println("text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
-            client.println(".button2 {background-color: #321546;}</style></head>"); 
+            client.println(".button2 {background-color : #321546;}</style></head>"); 
             
             // Web Page Heading
             client.println("<body><h1> ESP32 MEAL RUNER </h1>");
             
-            // Display current state, and ON/OFF buttons for GPIO 26  
-            client.println("<p> Distancia de carrinho " + output26State + "</p>");           //    NOMBRE DEL BOTON 1
-            // If the output26State is off, it displays the ON button       
-            if (output26State=="off") {
-              client.println("<p><a href=\"/26/on\"> <button class=\"button\">ON</button></a> </p>");
-            } 
+//  CREACION DE BOTON HTML DISTANCIA 1
+            client.println("<p> Distancia de carrinho 1 </p>");
+            client.println("<p><a href=\"/d1\"> <button class=\"button\">1</button></a> </p>");
+
+//  CREACION DE BOTON HTML DISTANCIA 2
+            client.println("<p> Distancia de carrinho 2 </p>");
+            client.println("<p><a href=\"/d2\"> <button class=\"button\">2</button></a> </p>");
+
+//  CREACION DE BOTON HTML DISTANCIA 3
+            client.println("<p> Distancia de carrinho 3 </p>");
+            client.println("<p><a href=\"/d3\"> <button class=\"button\">3</button></a> </p>");       
             
-            else {
-              client.println("<p><a href=\"/26/off\"> <button class=\"button button2\">1</button></a> </p>");
-            } 
-                
-            // Display current state, and ON/OFF buttons for GPIO 27  
-            client.println("<p>GPIO 27 - State " + output27State + "</p>");
-            // If the output27State is off, it displays the ON button       
-            if (output27State=="off") {
-              client.println("<p><a href=\"/27/on\"> <button class=\"button\">ON</button></a> </p>");
-            } 
-            
-            else {
-              client.println("<p><a href=\"/27/off\"> <button class=\"button button2\">OFF</button></a> </p>");
-            }
-            client.println("</body> </html>");
-            
-            // The HTTP response ends with another blank line
-            client.println();
-            // Break out of the while loop
-            break;
+            client.println("</body> </html>");      //  END OF HTML BODY
+            client.println();                       //  NEW LINE
+            break;                                  //  END THE LOOP
 
 // --------------------------- Display the HTML web page --------------------------- //
           
