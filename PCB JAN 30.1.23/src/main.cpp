@@ -45,8 +45,11 @@ const int servoPin1 = 12, servoPin2 = 14;
 Servo servo1, servo2;
 
 //  WIFI CONNECTIONS
+String header;
+WiFiServer server(80);
 const char* ssid = "JosePC";
 const char* password = "esp32wish";
+
 
 //--------------------- Code essencials --------------------//
 
@@ -79,6 +82,8 @@ void conex()
   Serial.println("WiFi connected");  
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
+
+  server.begin(); 
 }
 
 void MovePositive() {
@@ -362,8 +367,6 @@ const char* password = "esp32wish";
 WiFiServer server(80);
 String header;
 
-
-
 // MILLIS FUNCTION
 unsigned long currentTime = millis();   // Current time
 unsigned long previousTime = 0;         // Previous time
@@ -426,68 +429,85 @@ void loop() {
             client.println();
             
             //  AVISO HTML
-            if (header.indexOf("GET /d1") >= 0) {
-              Serial.println("Distancia 1 selected");
+            if (header.indexOf("GET /1r") >= 0) {
+              Serial.println("Distance 1, right side ---> selected");
             }
 
-            else if (header.indexOf("GET /d2") >= 0) {
-              Serial.println("Distancia 2 selected");
+            else if (header.indexOf("GET /2r") >= 0) {
+              Serial.println("Distance 2, right side ---> selected");
             }
 
-            else if (header.indexOf("GET /d3") >= 0) {
-              Serial.println("Distancia 3 selected");
+            else if (header.indexOf("GET /3r") >= 0) {
+              Serial.println("Distance 3, right side ---> selected");
+            }
+
+            else if (header.indexOf("GET /1l") >= 0) {
+              Serial.println("Distance 1, left side ---> selected");
+            }
+
+            else if (header.indexOf("GET /2l") >= 0) {
+              Serial.println("Distance 1, left side ---> selected");
+            }
+
+            else if (header.indexOf("GET /3l") >= 0) {
+              Serial.println("Distance 1, left side ---> selected");
             }
             
 // --------------------------- Display the HTML web page --------------------------- //
-            
             client.println("<!DOCTYPE html> <html>");
             client.println("<head> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
             client.println("<link rel=\"icon\" href=\"data:,\">");
 
             //  CCS STYLE TO ON/OFF BUTTONS
             client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}");
-            client.println(".button { background-color: #0c6306; border: none; color: white; padding: 16px 40px;");
+            client.println(".button { background-color: #0c6306; border: none; color: white; padding: 10px 20px;");
             client.println("text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
             client.println(".button2 {background-color : #321546;}</style></head>"); 
             
             // Web Page Heading
             client.println("<body><h1> ESP32 MEAL RUNER </h1>");
             
-//  CREACION DE BOTON HTML DISTANCIA 1
-            client.println("<p> Distancia de carrinho 1 </p>");
-            client.println("<p><a href=\"/d1\"> <button class=\"button\">1</button></a> </p>");
+            //  CREACION DE BOTON HTML DISTANCIA 1 right 
+            client.println("<p> Distance 1 right </p>");
+            client.println("<p><a href=\"/1r\"> <button class=\"button\">1r</button></a> </p>");
 
-//  CREACION DE BOTON HTML DISTANCIA 2
-            client.println("<p> Distancia de carrinho 2 </p>");
-            client.println("<p><a href=\"/d2\"> <button class=\"button\">2</button></a> </p>");
+            //  CREACION DE BOTON HTML DISTANCIA 2 right
+            client.println("<p> Distance 2 right </p>");
+            client.println("<p><a href=\"/2r\"> <button class=\"button\">2r</button></a> </p>");
 
-//  CREACION DE BOTON HTML DISTANCIA 3
-            client.println("<p> Distancia de carrinho 3 </p>");
-            client.println("<p><a href=\"/d3\"> <button class=\"button\">3</button></a> </p>");       
+            //  CREACION DE BOTON HTML DISTANCIA 3 right
+            client.println("<p> Distance 3 right </p>");
+            client.println("<p><a href=\"/3r\"> <button class=\"button\">3r</button></a> </p>");       
+
+            //  CREACION DE BOTON HTML DISTANCIA 1 left
+            client.println("<p> Distance 1 left </p>");
+            client.println("<p><a href=\"/1l\"> <button class=\"button\">1l</button></a> </p>");
+
+            //  CREACION DE BOTON HTML DISTANCIA 2 left
+            client.println("<p> Distance 2 left </p>");
+            client.println("<p><a href=\"/2l\"> <button class=\"button\">2l</button></a> </p>");
+
+            //  CREACION DE BOTON HTML DISTANCIA 3 left
+            client.println("<p> Distance 3 left </p>");
+            client.println("<p><a href=\"/3l\"> <button class=\"button\">3l</button></a> </p>");       
             
             client.println("</body> </html>");      //  END OF HTML BODY
             client.println();                       //  NEW LINE
             break;                                  //  END THE LOOP
-
 // --------------------------- Display the HTML web page --------------------------- //
           
           } 
           
-          else { // if you got a newline, then clear currentLine
-            currentLine = "";
-          }
+          else { currentLine = "";}                 // CLEAR CURRENT LINE
           
         } 
 
-        else if (c != '\r') {  // if you got anything else but a carriage return character,
-          currentLine += c;      // add it to the end of the currentLine
-        }
+        else if (c != '\r') { currentLine += c; }
       }
     }
-    // Clear the header variable
-    header = "";
-    // Close the connection
-    client.stop();
+    
+    header = "";                                  //  CLEAR HEADER VARIABLE
+    client.stop();                                //  CLOSE CONNECTION
     Serial.println("Client disconnected.");
     Serial.println("");
   }
