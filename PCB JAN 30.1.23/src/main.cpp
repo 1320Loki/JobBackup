@@ -30,8 +30,8 @@ int l2=2;
 
 //  POSITIONING
 
-int BPin = 34;                       //  cambiar pin
-int Side = 0;                       //  Side of tilting. Values are 1-2
+int BPin = 34;                      //  Positioning Button
+int Side = 0;                       //  Side of tilting. left = 1. Right = 2.
 int Pos = 0;                        //  Cart Positions.  Values are 1-3 
      
 bool Returning = false;             //  Returning state
@@ -69,9 +69,12 @@ void conex()
   Serial.println("**************************************");
   Serial.print("Connecting to ");       // begin Wifi connect
   Serial.println(ssid);
+
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
+
   delay(2000);
+
   WiFi.begin(ssid, password);
   int wific = 0;
   
@@ -80,6 +83,7 @@ void conex()
     delay(1000);
     Serial.println("CONECTANDO");
     wific++;
+
     if (wific > 5){
       ESP.restart();
     }
@@ -213,54 +217,48 @@ void loop() {
             client.println("Connection: close");        //  CLOSE THE CONNECTION
             client.println();
             
-/////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
             //  AVISO HTML
             if (header.indexOf("GET /1r") >= 0) {
               Serial.println("Distance 1, right side ---> selected");
-              Side = 1;
+              Side = 2;
               Pos = 1;
               valid++;
             }
 
             else if (header.indexOf("GET /2r") >= 0) {
               Serial.println("Distance 2, right side ---> selected");
-              Side = 1;
+              Side = 2;
               Pos = 2;
               valid++;
             }
 
             else if (header.indexOf("GET /3r") >= 0) {
               Serial.println("Distance 3, right side ---> selected");
-              Side = 1;
+              Side = 2;
               Pos = 3;
               valid++;
             }
 
             else if (header.indexOf("GET /1l") >= 0) {
               Serial.println("Distance 1, left side ---> selected");
-              Side = 2;
+              Side = 1;
               Pos = 1;
               valid++;
             }
 
             else if (header.indexOf("GET /2l") >= 0) {
               Serial.println("Distance 1, left side ---> selected");
-              Side = 2;
+              Side = 1;
               Pos = 2;
               valid++;
             }
 
             else if (header.indexOf("GET /3l") >= 0) {
               Serial.println("Distance 1, left side ---> selected");
-              Side = 2;
+              Side = 1;
               Pos = 3;
               valid++;
             }
-/////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
 
 // --------------------------- Display the HTML web page --------------------------- //
             client.println("<!DOCTYPE html> <html>");
@@ -404,8 +402,8 @@ void loop() {
 
               while(Pos != BtCont){
 
-                if(Returning == false){ MovePositive();}
-                else if(Returning == true){ MoveNegative();}
+                if(Returning == false){ MovePositive();}        //  Move Positive
+                else if(Returning == true){ MoveNegative();}    //  Move Negative
                 
                 BtState = digitalRead(BPin);
                 Serial.print("Boton ");
@@ -440,6 +438,7 @@ void loop() {
                   break;
                 }
                 delay(500);
+                Serial.println("While final part");
               }
               break;
             }
@@ -491,6 +490,7 @@ void loop() {
                   break;
                 }
                 delay(500);
+                Serial.println("While final part");
               }
               break;
             }
