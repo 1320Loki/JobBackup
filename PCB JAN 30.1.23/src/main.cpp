@@ -20,8 +20,8 @@ int l2=2;
 
 //  MOTOR 1 PINS
 #define In1 19   
-#define In2 5
-#define ENA 18
+#define In2 18
+#define ENA 5
 
 //  MOTOR 2 PINS
 #define ENB 16
@@ -190,7 +190,8 @@ void setup() {
 void loop() {
 
 // NEW CLIENT CONNECTION
-  WiFiClient client = server.available();  
+  WiFiClient client = server.available(); 
+  servoReset(); 
 
   if (client) {                     //  NEW CLIENT   
     currentTime = millis();         //  MILLIS TIME STRUCTURE
@@ -368,9 +369,13 @@ void loop() {
                   BtCont = 0;                               //  Para poder dropear alimentos
                   Returning = true;
                   MotorStop();
-                  delay(1000);
+                  delay(500);
+
                   if(Side == 1) { servoLeft(); }
                   else if(Side == 2) { servoRight(); }
+
+                  delay(1000);
+                  servoReset();
 
                   Serial.println("Returning begin");
                 }
@@ -379,9 +384,7 @@ void loop() {
                   valid = 0;
                   BtCont = 0;
                   Returning = false;
-                  delay(1000);
-                  servoReset();
-                  delay(1000);
+
                   Serial.println("P inicial");
                   break;
                 }
@@ -420,9 +423,13 @@ void loop() {
                   BtCont = 0;                               //  Para poder dropear alimentos
                   Returning = true;
                   MotorStop();
-                  delay(1000);
+                  delay(500);
+
                   if(Side == 1) { servoLeft(); }
                   else if(Side == 2) { servoRight(); }
+
+                  delay(1000);
+                  servoReset();
 
                   Serial.println("Returning begin");
                 }
@@ -431,9 +438,7 @@ void loop() {
                   valid = 0;
                   BtCont = 0;
                   Returning = false;
-                  delay(1000);
-                  servoReset();
-                  delay(1000);
+
                   Serial.println("P inicial");
                   break;
                 }
@@ -472,9 +477,13 @@ void loop() {
                   BtCont = 0;                               //  Para poder dropear alimentos
                   Returning = true;
                   MotorStop();
-                  delay(1000);
+                  delay(500);
+
                   if(Side == 1) { servoLeft(); }
                   else if(Side == 2) { servoRight(); }
+
+                  delay(1000);
+                  servoReset();
 
                   Serial.println("Returning begin");
                 }
@@ -483,9 +492,7 @@ void loop() {
                   valid = 0;
                   BtCont = 0;
                   Returning = false;
-                  delay(1000);
-                  servoReset();
-                  delay(1000);
+
                   Serial.println("P inicial");
                   break;
                 }
@@ -495,7 +502,6 @@ void loop() {
               break;
             }
             // -----------------------------  Case 3 ----------------------------- //
-
           }     // Switch Case
 
     }           //  While Valid
