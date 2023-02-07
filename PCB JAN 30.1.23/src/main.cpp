@@ -29,16 +29,24 @@ int l2=2;
 #define In4 4
 
 //  POSITIONING
-#define BPin 9
-bool Returning = false;
-int Pos = 0, valid = 0, Side = 0;
-int BtCont = 0, BtState = 0, LastBtState = 0;
+
+int BPin = 34;                       //  cambiar pin
+int Side = 0;                       //  Side of tilting. Values are 1-2
+int Pos = 0;                        //  Cart Positions.  Values are 1-3 
+     
+bool Returning = false;             //  Returning state
+int BtCont = 0, valid = 0;          //  Validation for the Buton algorithm
+int BtState = 0, LastBtState = 0;   //  State pf the buttons
 
 // MILLIS FUNCTION
 unsigned long start;                  
 unsigned long current, current2;      
 const unsigned long period1 = 1500;   //  Delay 1
 const unsigned long period2 = 1500;   //  Delay 2
+
+unsigned long currentTime = millis();   // Current time
+unsigned long previousTime = 0;         // Previous time
+const long timeoutTime = 2000;          // Define timeout (example: 2000ms = 2s)
 
 //  SERVO MOTORS
 const int servoPin1 = 12, servoPin2 = 14;
@@ -49,7 +57,6 @@ String header;
 WiFiServer server(80);
 const char* ssid = "JosePC";
 const char* password = "esp32wish";
-
 
 //--------------------- Code essencials --------------------//
 
@@ -82,8 +89,6 @@ void conex()
   Serial.println("WiFi connected");  
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
-
-  server.begin(); 
 }
 
 void MovePositive() {
@@ -153,6 +158,7 @@ void servoReset() {
   delay(3000);
 }
 //-------------------------------- CREATED FUNCTIONS --------------------------------//
+
 void setup() {
 
     Serial.begin(115200);
@@ -167,237 +173,16 @@ void setup() {
     pinMode(ENA, OUTPUT);   //  PWM Motor 1
     pinMode(ENB, OUTPUT);   //  PWM Motor 2
 
+    pinMode(BPin, INPUT);   //  Input Button
+
     servo1.attach(servoPin1);   //  Servo motor 1
     servo2.attach(servoPin2);   //  Servo motor 2
 
     conex();
+    server.begin();
 }
 
-void loop() {
-
-  current = millis();
-  if(current - start >= period1)
-  {
-    Serial.println("IDLE");
-    digitalWrite(l2, LOW);
-    MotorIdle();
-    servoReset();
-
-    BtState = digitalRead(BPin);
-    if(BtState != LastBtState && BtState == 1){
-      BtCont++;
-      valid = BtCont;
-    }
-    LastBtState = BtState; 
-    start = millis();
-  }
-
-  while(valid > 0){     // Movimiento
-    
-    delayMicroseconds(10000);
-    Pos = 1;
-    Side = 1;
-
-    LastBtState = 1;      //  necesario para filtrar ruido
-    // Pos = random(1, 3);
-    // Side = ramdom(2, 3);
-    Serial.print("Valor de la Pocision P = ");
-    Serial.println(Pos);
-    Serial.print("Valor Contador = ");
-    Serial.println(BtCont);   
-
-    digitalWrite(l2, HIGH);
-
-    switch (Pos)
-    {
-
-      case 1: {
-
-        Serial.print("Motor Running, Case 1, Pocision P = ");
-        Serial.println(Pos);
-        BtCont = 0;
-
-        while(Pos != BtCont){
-
-          if(Returning == false){ MovePositive();}
-          else if(Returning == true){ MoveNegative();}
-          
-          BtState = digitalRead(BPin);
-          if(BtState != LastBtState && BtState ==1){
-            BtCont++;
-            Serial.print("Counter Value = ");
-            Serial.println(BtCont);
-          }
-          LastBtState = BtState;
-
-          if(BtCont == Pos && Returning == false){    //  Motor se tiene que detener
-            BtCont = 0;                               //  Para poder dropear alimentos
-            Returning = true;
-            MotorStop();
-            delay(1000);
-            if(Side == 1) { servoLeft(); }
-            else if(Side == 2) { servoRight(); }
-
-            Serial.println("Returning begin");
-          }
-          
-          if(BtCont == Pos && Returning == true){
-            valid = 0;
-            BtCont = 0;
-            Returning = false;
-            delay(1000);
-            servoReset();
-            delay(1000);
-            Serial.println("P inicial");
-            break;
-          }
-          delay(500);
-        }
-        break;
-      }
-
-      case 2: {
-
-        Serial.print("Motor Running, Case 2, Pocision P = ");
-        Serial.println(Pos);
-        BtCont = 0;
-
-        while(Pos != BtCont){
-
-          if(Returning == false){ MovePositive();}
-          else if(Returning == true){ MoveNegative();}
-          
-          BtState = digitalRead(BPin);
-          if(BtState != LastBtState && BtState ==1){
-            BtCont++;
-            Serial.print("Counter Value = ");
-            Serial.println(BtCont);
-          }
-          LastBtState = BtState;
-
-          if(BtCont == Pos && Returning == false){    //  Motor se tiene que detener
-            BtCont = 0;                               //  Para poder dropear alimentos
-            Returning = true;
-            MotorStop();
-            delay(1000);
-            if(Side == 1) { servoLeft(); }
-            else if(Side == 2) { servoRight(); }
-
-            Serial.println("Returning begin");
-          }
-          
-          if(BtCont == Pos && Returning == true){
-            valid = 0;
-            BtCont = 0;
-            Returning = false;
-            delay(1000);
-            servoReset();
-            delay(1000);
-            Serial.println("P inicial");
-            break;
-          }
-          delay(500);
-        }
-        break;
-      }
-
-      case 3: {
-
-        Serial.print("Motor Running, Case 3, Pocision P = ");
-        Serial.println(Pos);
-        BtCont = 0;
-
-        while(Pos != BtCont){
-
-          if(Returning == false){ MovePositive();}
-          else if(Returning == true){ MoveNegative();}
-          
-          BtState = digitalRead(BPin);
-          if(BtState != LastBtState && BtState ==1){
-            BtCont++;
-            Serial.print("Counter Value = ");
-            Serial.println(BtCont);
-          }
-          LastBtState = BtState;
-
-          if(BtCont == Pos && Returning == false){    //  Motor se tiene que detener
-            BtCont = 0;                               //  Para poder dropear alimentos
-            Returning = true;
-            MotorStop();
-            delay(1000);
-            if(Side == 1) { servoLeft(); }
-            else if(Side == 2) { servoRight(); }
-
-            Serial.println("Returning begin");
-          }
-          
-          if(BtCont == Pos && Returning == true){
-            valid = 0;
-            BtCont = 0;
-            Returning = false;
-            delay(1000);
-            servoReset();
-            delay(1000);
-            Serial.println("P inicial");
-            break;
-          }
-
-          delay(500);
-        }
-        break;
-      }
-    }
-
-    delay(500);
-  }
-}
-
-/*
-
-//--------------------- essencials Libs --------------------//
-#include <Arduino.h>
-#include "WiFi.h"
-//--------------------- essencials Libs --------------------//
-
-
-//--------------------- Code essencials --------------------//
-//  WIFI CONNECTIONS
-const char* ssid = "JosePC";
-const char* password = "esp32wish";
-WiFiServer server(80);
-String header;
-
-// MILLIS FUNCTION
-unsigned long currentTime = millis();   // Current time
-unsigned long previousTime = 0;         // Previous time
-const long timeoutTime = 2000;          // Define timeout (example: 2000ms = 2s)
-//--------------------- Code essencials --------------------//
-
-
-void setup() {
-
-  Serial.begin(115200);
-
-  //  WIFI CONNECTION
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
-  WiFi.begin(ssid, password);
-
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-
-  Serial.println("");
-  Serial.println("WiFi connected.");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-
-  server.begin();   //  BEGIN THE WEB SERVER
-//  WIFI CONNECTION
-  
-}
-
+//------------------------------------ ARDU LOOP ------------------------------------//
 void loop() {
 
 // NEW CLIENT CONNECTION
@@ -428,31 +213,55 @@ void loop() {
             client.println("Connection: close");        //  CLOSE THE CONNECTION
             client.println();
             
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
             //  AVISO HTML
             if (header.indexOf("GET /1r") >= 0) {
               Serial.println("Distance 1, right side ---> selected");
+              Side = 1;
+              Pos = 1;
+              valid++;
             }
 
             else if (header.indexOf("GET /2r") >= 0) {
               Serial.println("Distance 2, right side ---> selected");
+              Side = 1;
+              Pos = 2;
+              valid++;
             }
 
             else if (header.indexOf("GET /3r") >= 0) {
               Serial.println("Distance 3, right side ---> selected");
+              Side = 1;
+              Pos = 3;
+              valid++;
             }
 
             else if (header.indexOf("GET /1l") >= 0) {
               Serial.println("Distance 1, left side ---> selected");
+              Side = 2;
+              Pos = 1;
+              valid++;
             }
 
             else if (header.indexOf("GET /2l") >= 0) {
               Serial.println("Distance 1, left side ---> selected");
+              Side = 2;
+              Pos = 2;
+              valid++;
             }
 
             else if (header.indexOf("GET /3l") >= 0) {
               Serial.println("Distance 1, left side ---> selected");
+              Side = 2;
+              Pos = 3;
+              valid++;
             }
-            
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+
 // --------------------------- Display the HTML web page --------------------------- //
             client.println("<!DOCTYPE html> <html>");
             client.println("<head> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
@@ -510,7 +319,185 @@ void loop() {
     client.stop();                                //  CLOSE CONNECTION
     Serial.println("Client disconnected.");
     Serial.println("");
+  
   }
-}
 
-*/
+
+
+    Serial.println("IDLE");
+    MotorIdle();
+    servoReset();
+    BtState = digitalRead(BPin);
+    Serial.print("Boton ");
+    Serial.println(BtState);
+
+    while(valid > 0){     // Movimiento
+    
+      delayMicroseconds(10000);
+      Serial.print("Valor de la Pocision P = ");
+      Serial.println(Pos);
+      Serial.print("Valor del lado = ");
+      Serial.println(Side);   
+
+          switch (Pos) {
+            
+            // -----------------------------  Case 1 ----------------------------- //
+            case 1: {
+
+              Serial.print("Motor Running, Case 1, Pocision P = ");
+              Serial.println(Pos);
+              Serial.print("Side = ");
+              Serial.println(Side);
+              BtCont = 0;
+
+              while(Pos != BtCont){
+
+                if(Returning == false){ MovePositive();}
+                else if(Returning == true){ MoveNegative();}
+                
+                BtState = digitalRead(BPin);
+                Serial.print("Boton ");
+                Serial.println(BtState);
+
+                if(BtState != LastBtState && BtState == 1){
+                  BtCont++;
+                  Serial.print("Counter Value = ");
+                  Serial.println(BtCont);
+                }
+                LastBtState = BtState;
+
+                if(BtCont == Pos && Returning == false){    //  Motor se tiene que detener
+                  BtCont = 0;                               //  Para poder dropear alimentos
+                  Returning = true;
+                  MotorStop();
+                  delay(1000);
+                  if(Side == 1) { servoLeft(); }
+                  else if(Side == 2) { servoRight(); }
+
+                  Serial.println("Returning begin");
+                }
+                
+                if(BtCont == Pos && Returning == true){
+                  valid = 0;
+                  BtCont = 0;
+                  Returning = false;
+                  delay(1000);
+                  servoReset();
+                  delay(1000);
+                  Serial.println("P inicial");
+                  break;
+                }
+                delay(500);
+                Serial.println("While final part");
+              }
+              break;
+            }
+
+            // -----------------------------  Case 2 ----------------------------- //
+            case 2: {
+
+              Serial.print("Motor Running, Case 1, Pocision P = ");
+              Serial.println(Pos);
+              Serial.print("Side = ");
+              Serial.println(Side);
+              BtCont = 0;
+
+              while(Pos != BtCont){
+
+                if(Returning == false){ MovePositive();}
+                else if(Returning == true){ MoveNegative();}
+                
+                BtState = digitalRead(BPin);
+                Serial.print("Boton ");
+                Serial.println(BtState);
+
+                if(BtState != LastBtState && BtState == 1){
+                  BtCont++;
+                  Serial.print("Counter Value = ");
+                  Serial.println(BtCont);
+                }
+                LastBtState = BtState;
+
+                if(BtCont == Pos && Returning == false){    //  Motor se tiene que detener
+                  BtCont = 0;                               //  Para poder dropear alimentos
+                  Returning = true;
+                  MotorStop();
+                  delay(1000);
+                  if(Side == 1) { servoLeft(); }
+                  else if(Side == 2) { servoRight(); }
+
+                  Serial.println("Returning begin");
+                }
+                
+                if(BtCont == Pos && Returning == true){
+                  valid = 0;
+                  BtCont = 0;
+                  Returning = false;
+                  delay(1000);
+                  servoReset();
+                  delay(1000);
+                  Serial.println("P inicial");
+                  break;
+                }
+                delay(500);
+              }
+              break;
+            }
+
+            // -----------------------------  Case 3 ----------------------------- //
+            case 3: {
+
+              Serial.print("Motor Running, Case 1, Pocision P = ");
+              Serial.println(Pos);
+              Serial.print("Side = ");
+              Serial.println(Side);
+              BtCont = 0;
+
+              while(Pos != BtCont){
+
+                if(Returning == false){ MovePositive();}
+                else if(Returning == true){ MoveNegative();}
+                
+                BtState = digitalRead(BPin);
+                Serial.print("Boton ");
+                Serial.println(BtState);
+
+                if(BtState != LastBtState && BtState ==1){
+                  BtCont++;
+                  Serial.print("Counter Value = ");
+                  Serial.println(BtCont);
+                }
+                LastBtState = BtState;
+
+                if(BtCont == Pos && Returning == false){    //  Motor se tiene que detener
+                  BtCont = 0;                               //  Para poder dropear alimentos
+                  Returning = true;
+                  MotorStop();
+                  delay(1000);
+                  if(Side == 1) { servoLeft(); }
+                  else if(Side == 2) { servoRight(); }
+
+                  Serial.println("Returning begin");
+                }
+                
+                if(BtCont == Pos && Returning == true){
+                  valid = 0;
+                  BtCont = 0;
+                  Returning = false;
+                  delay(1000);
+                  servoReset();
+                  delay(1000);
+                  Serial.println("P inicial");
+                  break;
+                }
+                delay(500);
+              }
+              break;
+            }
+            // -----------------------------  Case 3 ----------------------------- //
+
+          }     // Switch Case
+
+    }           //  While Valid
+
+}               //  Valid
