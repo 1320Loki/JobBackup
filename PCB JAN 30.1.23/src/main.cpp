@@ -84,11 +84,13 @@ void conex()
     Serial.println("CONECTANDO");
     wific++;
 
+    digitalWrite(l2, HIGH);
     if (wific > 5){
       ESP.restart();
     }
   }
   
+  digitalWrite(l2, LOW);
   Serial.println("");
   Serial.println("WiFi connected");  
   Serial.print("IP address: ");
@@ -191,7 +193,6 @@ void loop() {
 
 // NEW CLIENT CONNECTION
   WiFiClient client = server.available(); 
-  servoReset(); 
 
   if (client) {                     //  NEW CLIENT   
     currentTime = millis();         //  MILLIS TIME STRUCTURE
