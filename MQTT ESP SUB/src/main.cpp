@@ -129,7 +129,7 @@ void loop() {
 
   if (!client.connected()) {  reconnect();}     //  mqtt server conex
   client.loop();
-
+  delay(1000);
 }
 
 /*

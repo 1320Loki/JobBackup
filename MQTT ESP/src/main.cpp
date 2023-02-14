@@ -22,7 +22,7 @@ https://patorjk.com/software/taag/#p=display&f=Big&t=MQTT
 //--------------------- Milis function ---------------------//
 unsigned long start;                  // Estructura De millis
 unsigned long current, current2;      //
-const unsigned long period1 = 1000;   //
+const unsigned long period1 = 1500;   //
 const unsigned long period2 = 500;    //
 //--------------------- Milis function ---------------------//
 
@@ -101,7 +101,7 @@ void setup() {
 
   Serial.begin(115200);
   conex();
-  
+
   client.setServer(mqtt_server, 1883);
 }
 
@@ -122,7 +122,8 @@ void loop() {
     Serial.println(output);                     
 
     client.publish("Trial", output);            //  MQTT publishing
-    delay(1000);
+
+    start = millis();
   }
 
 }
