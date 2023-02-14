@@ -11,31 +11,37 @@ https://patorjk.com/software/taag/#p=display&f=Big&t=MQTT
 
 //--------------------- essencials Libs --------------------//
 
+#include <ArduinoJson.hpp>
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
-
 #include <Arduino.h>
 #include "WiFi.h"
+
 //--------------------- essencials Libs --------------------//
 
-//--------------------- Milis function ---------------------//
-unsigned long start;                  // Estructura De millis
-unsigned long current, current2;      //
-const unsigned long period1 = 1000;   //
-const unsigned long period2 = 500;    //
-//--------------------- Milis function ---------------------//
 
 //--------------------- Code essencials --------------------//
+
+unsigned long start;                    //  Estructura De millis
+unsigned long current, current2;      
+const unsigned long period1 = 1000;   
+const unsigned long period2 = 5000;    
+
+
 //  WIFI CONNECTIONS
 const char* ssid = "JosePC";
 const char* password = "esp32wish";
 
+#define TrialTopic "Trial"
 #define mqtt_server "192.168.1.200"     //  IP of MQTT BROKER
 WiFiClient rtu2;                        //  Name of the MQTT CLIENT
 PubSubClient client(rtu2);
 
-//  Trialing and debbuging
-float num;
+
+
+float num;                              //  Trialing and debbuging
+String change;
+
 //--------------------- Code essencials --------------------//
 
 void conex()
@@ -96,13 +102,39 @@ void reconnect()
   }
 }
 
+void mqttCallback(char* topic, byte* message, unsigned int length) 
+{
+    String messageTemp;
+    
+    for (int i = 0; i < length; i++) 
+    {
+        //Serial.print((char)message[i]);
+        messageTemp += (char)message[i];
+    }
+    change = messageTemp;
+    Serial.println();
+
+}
+
 void setup() {
 
-
+  Serial.begin(115200);
+  conex();
+  
+  client.setServer(mqtt_server, 1883);
+  client.setCallback(mqttCallback);
 }
 
 void loop() {
 
-
+  if (!client.connected()) {  reconnect();}     //  mqtt server conex
+  client.loop();
 
 }
+
+/*
+
+
+
+
+*/

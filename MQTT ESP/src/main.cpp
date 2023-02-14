@@ -101,6 +101,7 @@ void setup() {
 
   Serial.begin(115200);
   conex();
+  
   client.setServer(mqtt_server, 1883);
 }
 
