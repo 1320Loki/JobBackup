@@ -19,15 +19,17 @@ https://patorjk.com/software/taag/#p=display&f=Big&t=MQTT
 #include "WiFi.h"
 //--------------------- essencials Libs --------------------//
 
+//--------------------- Milis function ---------------------//
+unsigned long start;                  // Estructura De millis
+unsigned long current, current2;      //
+const unsigned long period1 = 1000;   //
+const unsigned long period2 = 500;    //
+//--------------------- Milis function ---------------------//
+
 //--------------------- Code essencials --------------------//
 //  WIFI CONNECTIONS
 const char* ssid = "JosePC";
 const char* password = "esp32wish";
-
-//  MILLIS FUNCTION
-unsigned long currentTime = millis();   //  Current time
-unsigned long previousTime = 0;         //  Previous time
-const long timeoutTime = 2000;          //  Define timeout (example: 2000ms = 2s)
 
 #define mqtt_server "192.168.1.200"     //  IP of MQTT BROKER
 WiFiClient rtu2;                        //  Name of the MQTT CLIENT
@@ -104,37 +106,27 @@ void setup() {
 
 void loop() {
 
-  if (!client.connected()) {  reconnect();}
+  if (!client.connected()) {  reconnect();}     //  mqtt server conex
 
-  StaticJsonDocument<80> doc;
+  StaticJsonDocument<80> doc;                   //  JSON static DOC
   char output[80];
 
-  num = random(0, 25);
-  doc["n"] = num;
+  current = millis();
+  if(current - start >= period1) {
 
-  serializeJson(doc, output);
-  Serial.println(output);
+    num = random(0, 25);
+    doc["n"] = num;
 
-  client.publish("Trial", output);
-  delay(1000);
-  
+    serializeJson(doc, output);                 //  Json serialization
+    Serial.println(output);                     
+
+    client.publish("Trial", output);            //  MQTT publishing
+    delay(1000);
+  }
 
 }
-
 
 /*
 float to string!!
 dtostrf(float_value, min_width, digits_after_decimal, to_store_string)
-
-
-
-
-
-
-
-
-
-
-
-
 */
