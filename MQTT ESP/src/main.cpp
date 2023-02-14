@@ -10,7 +10,11 @@ https://patorjk.com/software/taag/#p=display&f=Big&t=MQTT
 */
 
 //--------------------- essencials Libs --------------------//
+
+#include <ArduinoJson.h>
+
 #include <PubSubClient.h>
+
 #include <Arduino.h>
 #include "WiFi.h"
 //--------------------- essencials Libs --------------------//
@@ -20,7 +24,7 @@ https://patorjk.com/software/taag/#p=display&f=Big&t=MQTT
 const char* ssid = "JosePC";
 const char* password = "esp32wish";
 
-// MILLIS FUNCTION
+//  MILLIS FUNCTION
 unsigned long currentTime = millis();   //  Current time
 unsigned long previousTime = 0;         //  Previous time
 const long timeoutTime = 2000;          //  Define timeout (example: 2000ms = 2s)
@@ -28,6 +32,9 @@ const long timeoutTime = 2000;          //  Define timeout (example: 2000ms = 2s
 #define mqtt_server "192.168.1.200"     //  IP of MQTT BROKER
 WiFiClient rtu2;                        //  Name of the MQTT CLIENT
 PubSubClient client(rtu2);
+
+//  Trialing and debbuging
+float num;
 //--------------------- Code essencials --------------------//
 
 void conex()
@@ -58,21 +65,6 @@ void conex()
   Serial.println(WiFi.localIP());
 }
 
-void setup() {
-  // put your setup code here, to run once:
-  Serial.begin(115200);
-  conex();
-  client.setServer(mqtt_server, 1883);
-}
-
-void loop() {
-  // put your main code here, to run repeatedly:
-
-}
-
-
-/*
-
 void reconnect() 
 {
   // Loop until we're reconnected
@@ -101,8 +93,38 @@ void reconnect()
         delay(5000);
     }
   }
-  topicsSubscribe();
 }
+
+void setup() {
+
+  Serial.begin(115200);
+  conex();
+  client.setServer(mqtt_server, 1883);
+}
+
+void loop() {
+
+  if (!client.connected()) {  reconnect();}
+
+  StaticJsonDocument<80> doc;
+  char output[80];
+
+  num = random(0, 25);
+  doc["n"] = num;
+
+  serializeJson(doc, output);
+  Serial.println(output);
+
+  client.publish("Trial", output);
+  delay(1000);
+  
+
+}
+
+
+/*
+float to string!!
+dtostrf(float_value, min_width, digits_after_decimal, to_store_string)
 
 
 
