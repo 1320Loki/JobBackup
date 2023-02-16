@@ -33,6 +33,7 @@ float num;                              //  Trialing and debbuging
 String change;
 //--------------------- Code essencials --------------------//
 
+
 //////////////////////////////////////////////////////////////
 //-------------------- Created Functions -------------------//
 void reconnect() {
@@ -69,6 +70,7 @@ void callback(char* topic, byte* message, unsigned int length)  {
 }
 //-------------------- Created Functions -------------------//
 //////////////////////////////////////////////////////////////
+
 
 //--------------------- TASK 1 >>> WIFI --------------------//
 void WifiAlive (void * parameters) {
@@ -118,8 +120,10 @@ void task2 (void * parameters)  {
   for (;;)  {
     
     
-    Serial.println("a");
-    vTaskDelay(10000 / portTICK_PERIOD_MS);
+  if (!client.connected()) {  reconnect();}     //  mqtt server conex
+  client.loop();
+  delay(100);
+    //vTaskDelay(10000 / portTICK_PERIOD_MS);
   }
 }
 //--------------------- Task 2 >>> MQTT --------------------//
@@ -150,11 +154,31 @@ void setup() {
     1,              //  Task priority
     &Task1,         //  Task Handle
     1               //  Core 1 
-  );                
+  );               
 
 }
 
 void loop() {
-  delay(1);
+
 }
 
+
+
+/*
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/
