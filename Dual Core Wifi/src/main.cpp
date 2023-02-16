@@ -26,6 +26,9 @@
 WiFiClient rtu2;                        //  Name of the MQTT CLIENT
 PubSubClient client(rtu2);
 
+TaskHandle_t Task0;
+TaskHandle_t Task1;
+
 float num;                              //  Trialing and debbuging
 String change;
 //--------------------- Code essencials --------------------//
@@ -95,7 +98,7 @@ void WifiAlive (void * parameters) {
       Serial.println("CONECTANDO");
       wific++;
 
-      if (wific > 5){ ESP.restart();  }
+      //if (wific > 5){ ESP.restart();  }
 
     }
     
@@ -104,6 +107,8 @@ void WifiAlive (void * parameters) {
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
 
+    reconnect();
+
   } }
 //--------------------- TASK 1 >>> WIFI --------------------//
 
@@ -111,14 +116,13 @@ void WifiAlive (void * parameters) {
 void task2 (void * parameters)  {
 
   for (;;)  {
-    reconnect();
+    
+    
+    Serial.println("a");
+    vTaskDelay(10000 / portTICK_PERIOD_MS);
   }
 }
 //--------------------- Task 2 >>> MQTT --------------------//
-
-
-
-
 
 
 void setup() {
@@ -133,7 +137,7 @@ void setup() {
     5000,           //  Stack Size
     NULL,           //  Task Parameters
     1,              //  Task priority
-    NULL,           //  Task Handle
+    &Task0,         //  Task Handle
     0               //  Core 0 of esp32
   );            
 
@@ -144,12 +148,13 @@ void setup() {
     5000,           //  Stack Size
     NULL,           //  Task Parameters
     1,              //  Task priority
-    NULL,           //  Task Handle
+    &Task1,         //  Task Handle
     1               //  Core 1 
   );                
 
 }
 
 void loop() {
+  delay(1);
 }
 
