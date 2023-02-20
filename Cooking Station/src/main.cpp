@@ -149,7 +149,7 @@ void TimeLvl(int time)  {
     Serial.println("Set temp to 0");
     QuickButton(2);                       
     digitalWrite(out[5], HIGH);           
-    delay(1600);                       
+    delay(1700);                       
     digitalWrite(out[5], LOW);            
     delay(150); 
     break;
@@ -221,15 +221,16 @@ void loop() {
     Serial.print("CONTADOR ");
     Serial.println(a);
   
-    if( a == 5) { 
+    if( a == 1) { 
       ResetButton();      //  Resets all parameters
       delay(100);
-      //  Values (0 1 2 3 5 10 30 60 99)
-      TimeLvl(1); /*
-      //  Values (0 1 2 3 4)       
-      SpeedLvl(2);
-      //  Values (0 60 100 120)       
-      TempLvl(100);  */     
+      
+      TimeLvl(1);         //  Values (0 1 2 3 5 10 30 60 99)
+             
+      SpeedLvl(2);        //  Values (0 1 2 3 4)
+             
+      TempLvl(100);       //  Values (0 60 100 120)
+          
       delay(100);
       StartButton();      
     }
