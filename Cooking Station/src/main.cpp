@@ -9,7 +9,11 @@ const unsigned long period2 = 500;    //
 //--------------------- Milis function ---------------------//
 
 int out[] = {2,3,4,5,6,7,8};
-int a = 0;
+int a = 0;            //  contador que cambiare por mqtt input
+
+int counter1 = 0;     //  Setting up counters
+int BuzzerPin = A0;   //  Buzzer analog readpin
+int BuzzerValue;
 //--------------------- Code essencials --------------------//
 
 void QuickButton(int i) {
@@ -23,6 +27,7 @@ void QuickButton(int i) {
 
 void StartButton() {
 
+  delay(500);
   QuickButton(0);
   delay(100);
   QuickButton(3);
@@ -31,6 +36,9 @@ void StartButton() {
 
 void ResetButton() {
 
+  delay(500);
+  counter1 = 0;
+  
   QuickButton(0);
   delay(100);
   digitalWrite(out[6], HIGH);
@@ -58,11 +66,11 @@ void SpeedLvl(int speed) {
   switch (speed)  {                     //  Speed levels ---> 0 1 2 3 4
  
   case 0:
-    Serial.print("Set speed to 0");
+    Serial.println("Set speed to 0");
     break;
   
   case 1:
-    Serial.print("Set speed to 1");
+    Serial.println("Set speed to 1");
     for (int i=0; i<1; i++) { 
       QuickButton(5);
       delay(150);
@@ -70,7 +78,7 @@ void SpeedLvl(int speed) {
     break;
 
   case 2:
-    Serial.print("Set speed to 1");
+    Serial.println("Set speed to 1");
     for (int i=0; i<2; i++) { 
       QuickButton(5); 
       delay(150);
@@ -78,7 +86,7 @@ void SpeedLvl(int speed) {
     break;
 
   case 3:
-    Serial.print("Set speed to 1");
+    Serial.println("Set speed to 1");
     for (int i=0; i<3; i++) { 
       QuickButton(5); 
       delay(150);
@@ -86,7 +94,7 @@ void SpeedLvl(int speed) {
     break;
 
   case 4:
-    Serial.print("Set speed to 1");
+    Serial.println("Set speed to 1");
     for (int i=0; i<4; i++) { 
       QuickButton(5); 
       delay(150);
@@ -113,7 +121,7 @@ void TempLvl(int temp)  {
     break;
   
   case 60:
-    Serial.print("Set temp to 60");
+    Serial.println("Set temp to 60");
     for (int i=0; i<4; i++) { 
       QuickButton(5);
       delay(150);
@@ -121,7 +129,7 @@ void TempLvl(int temp)  {
     break;
 
   case 100:
-    Serial.print("Set temp to 100");
+    Serial.println("Set temp to 100");
     for (int i=0; i<8; i++) { 
       QuickButton(5);
       delay(150);
@@ -129,7 +137,7 @@ void TempLvl(int temp)  {
     break;
     
   case 120:
-    Serial.print("Set temp to 120");
+    Serial.println("Set temp to 120");
     for (int i=0; i<10; i++) { 
       QuickButton(5);
       delay(150);
@@ -194,6 +202,22 @@ void TimeLvl(int time)  {
     delay(150);  
     break;      
 } }
+
+void TriggerBuzzer () {
+
+  delay(1000);
+  for (;;)  {
+    BuzzerValue = analogRead(BuzzerPin);
+    if (BuzzerValue < 800)  { 
+      counter1++;
+      Serial.println("STOPING BUZZ DETECTED... RESTETING Soon");
+      delay(1000);
+      ResetButton();
+      a = 0;
+      break;
+    }
+  delay(100); 
+} }
 ///////////////////////////////////////////////////////////////////////////
 
 void setup() {
@@ -208,8 +232,7 @@ void setup() {
     Serial.print("OUTPUT---> ");
     Serial.println(out[i]);
     pinMode(out[i], OUTPUT);
-  }
-}
+} }
 
 
 void loop() {
@@ -220,8 +243,10 @@ void loop() {
     a++;
     Serial.print("CONTADOR ");
     Serial.println(a);
+    BuzzerValue = analogRead(BuzzerPin);
+    Serial.println(BuzzerValue);
   
-    if( a == 1) { 
+    if( a == 3) { 
       ResetButton();      //  Resets all parameters
       delay(100);
       
@@ -231,12 +256,14 @@ void loop() {
              
       TempLvl(100);       //  Values (0 60 100 120)
           
-      delay(100);
-      StartButton();      
+      StartButton();      //  Start cooking process
+
+      TriggerBuzzer();
     }
 
     start = millis();
-  } }
+
+} }
 
 
 /*
