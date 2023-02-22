@@ -9,11 +9,15 @@ const unsigned long period2 = 500;    //
 //--------------------- Milis function ---------------------//
 
 int out[] = {2,3,4,5,6,7,8};
-int a = 0;            //  contador que cambiare por mqtt input
+int a = 0;              //  contador que cambiare por mqtt input
 
-int counter1 = 0;     //  Setting up counters
-int BuzzerPin = A0;   //  Buzzer analog readpin
-int BuzzerValue;
+int counter1 = 0;       //  Setting Up Counters
+int BuzzerPin = A5;     //  Buzzer Analog ReadPin
+int BuzzerValue;        //  Buzzer Analog Value
+
+int InSignal = A1;      //  Signal to Start Cooking Process
+int RobotSignal = A2;   //  After the cooking process ends
+int invalue, outvalue;  //  Values
 //--------------------- Code essencials --------------------//
 
 void QuickButton(int i) {
@@ -47,7 +51,7 @@ void ResetButton() {
   digitalWrite(out[6], HIGH);
   delay(2000);
   digitalWrite(out[6], LOW);
-  delay(100);
+  delay(500);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -210,12 +214,16 @@ void TriggerBuzzer () {
     BuzzerValue = analogRead(BuzzerPin);
     if (BuzzerValue < 800)  { 
       counter1++;
-      Serial.println("STOPING BUZZ DETECTED... RESTETING Soon");
-      delay(1000);
-      ResetButton();
-      a = 0;
-      break;
-    }
+
+      if (counter1 >= 3){
+        Serial.println("STOPING BUZZ DETECTED... RESTETING Soon");
+        delay(1000);
+        ResetButton();
+        digitalWrite(RobotSignal, HIGH);
+        delay(100);
+        break;
+      } }
+
   delay(100); 
 } }
 ///////////////////////////////////////////////////////////////////////////
@@ -225,6 +233,9 @@ void setup() {
   Serial.begin(9600);
   Serial.println("");
   Serial.println("INICIO DE SISTEMA ");
+
+  pinMode(InSignal, INPUT_PULLUP);
+  pinMode(RobotSignal, OUTPUT);
 
   for (int i=0; i!=7; i++){
 
@@ -240,25 +251,25 @@ void loop() {
   current = millis();
 
   if(current - start >= period1)  {
-    a++;
-    Serial.print("CONTADOR ");
-    Serial.println(a);
-    BuzzerValue = analogRead(BuzzerPin);
-    Serial.println(BuzzerValue);
-  
-    if( a == 3) { 
+
+    digitalWrite(RobotSignal, LOW);
+    invalue = digitalRead(InSignal);
+    Serial.println(invalue);
+
+    if  (digitalRead(InSignal) == 1) {
+
       ResetButton();      //  Resets all parameters
-      delay(100);
       
       TimeLvl(1);         //  Values (0 1 2 3 5 10 30 60 99)
              
-      SpeedLvl(2);        //  Values (0 1 2 3 4)
+      SpeedLvl(0);        //  Values (0 1 2 3 4)
              
-      TempLvl(100);       //  Values (0 60 100 120)
+      TempLvl(0);       //  Values (0 60 100 120)
           
       StartButton();      //  Start cooking process
 
-      TriggerBuzzer();
+      TriggerBuzzer();    //  Waiting for buzzer
+
     }
 
     start = millis();
