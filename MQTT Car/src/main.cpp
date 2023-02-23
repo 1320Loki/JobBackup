@@ -14,6 +14,7 @@ https://patorjk.com/software/taag/#p=display&f=Big&t=MQTT
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
 #include <Arduino.h>
+#include <Servo.h>
 #include "WiFi.h"
 //--------------------- essencials Libs --------------------//
 
@@ -29,12 +30,44 @@ const char* ssid = "JosePC";            //  Name of WIFI Network
 const char* password = "esp32wish";     //  Password
 
 #define mqtt_server "192.168.1.200"     //  IP of MQTT BROKER
-WiFiClient MqttWAC;                        //  Name of the MQTT CLIENT
+WiFiClient MqttWAC;                     //  Name of the MQTT CLIENT
 PubSubClient client(MqttWAC);
 
 //  Trialing and debbuging
 float num;
+
+//  INDICATION LEDS
+int l2=2;
+
+//  MOTOR 1 PINS
+#define In1 0   
+#define In2 4
+#define ENA 16
+
+//  MOTOR 2 PINS
+#define ENB 5
+#define In3 18  
+#define In4 19
+
+//  POSITIONING
+int BPin = 34;                      //  Positioning Button
+int Side = 0;                       //  Side of tilting. left = 1. Right = 2.
+int Pos = 0;                        //  Cart Positions.  Values are 1-3 
+
+bool Returning = false;             //  Returning state
+int BtCont = 0, valid = 0;          //  Validation for the Buton algorithm
+int BtState = 0, LastBtState = 0;   //  State pf the buttons
+
+//  SERVO MOTORS
+const int servoPin1 = 12, servoPin2 = 14;
+Servo servo1, servo2;
 //--------------------- Code essencials --------------------//
+
+//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////  Created Funtions  /////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+
+//  __________________________  WIFI Connects   __________________________  //
 
 void conex()  {
   Serial.println();
@@ -47,15 +80,13 @@ void conex()  {
   WiFi.begin(ssid, password);
   int wific = 0;
   
-  while (WiFi.status() != WL_CONNECTED) 
-  {
+  while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
     Serial.println("CONECTANDO");
     wific++;
     if (wific > 5){
       ESP.restart();
-    }
-  }
+  } }
   
   Serial.println("");
   Serial.println("WiFi connected");  
@@ -63,10 +94,9 @@ void conex()  {
   Serial.println(WiFi.localIP());
 }
 
-void reconnect() 
-{
-  // Loop until we're reconnected
-  int counter = 0;
+void reconnect()  {
+  
+  int counter = 0;                
   while (!client.connected()) 
   {
     if (counter==2) { ESP.restart();}
@@ -74,13 +104,11 @@ void reconnect()
     Serial.print("Attempting MQTT connection...\n");
     // Attempt to connect
   
-    if (client.connect("rtu2"))
-    {
+    if (client.connect("MqttWAC")) {    //  Broker
         Serial.println("Connected!!!");
         Serial.println("**************************************\n");
     } 
-    else 
-    {
+    else  {
         Serial.print("failed, rc=");
         Serial.print(client.state());
         Serial.println(" try again in 5 seconds");
@@ -89,6 +117,7 @@ void reconnect()
 }  }  }
 
 void callback(char* topic, byte* message, unsigned int length)  {
+
   Serial.print("Message arrived on topic: ");
   Serial.print(topic);
   Serial.print(". Message: ");
@@ -111,10 +140,97 @@ void Alive()  {
 
   serializeJson(doc2, output);                 //  Json serialization
   Serial.println(output); 
-  client.publish("Cart Status", output);             //  MQTT publishing
+  client.publish("Cart Status", output);       //  MQTT publishing
 }
 
+//  __________________________  WIFI Connects   __________________________  //
+
+//  __________________________  Servo commands  __________________________  //
+
+void servoLeft() {
+  servo1.write(180);
+  delay(1500);
+}
+
+void servoRight() {
+  servo1.write(0);
+  delay(1500);
+}
+
+void servoReset() {
+  servo1.write(90);
+  delay(3000);
+}
+
+//  __________________________  Servo commands  __________________________  //
+
+//  __________________________  Motor commands  __________________________  //
+
+void MovePositive() {
+
+  digitalWrite(l2, HIGH);
+
+  digitalWrite(In1, HIGH);  //  direction pin Motor 1
+  digitalWrite(In2, LOW);   //  direction pin Motor 1
+  digitalWrite(In3, HIGH);  //  direction pin Motor 2
+  digitalWrite(In4, LOW);   //  direction pin Motor 2   
+
+  analogWrite(ENA, 255);
+  analogWrite(ENB, 255);
+}
+
+void MoveNegative() {
+
+  digitalWrite(l2, HIGH); 
+
+  digitalWrite(In1, LOW);   //  direction pin Motor 1
+  digitalWrite(In2, HIGH);  //  direction pin Motor 1
+  digitalWrite(In3, LOW);   //  direction pin Motor 2
+  digitalWrite(In4, HIGH);  //  direction pin Motor 2   
+
+  analogWrite(ENA, 255);
+  analogWrite(ENB, 255);
+}
+
+void MotorStop() {
+
+  digitalWrite(In1, LOW);   //  direction pin Motor 1
+  digitalWrite(In2, LOW);   //  direction pin Motor 1
+  digitalWrite(In3, LOW);   //  direction pin Motor 2
+  digitalWrite(In4, LOW);   //  direction pin Motor 2 
+
+  digitalWrite(l2, HIGH);
+}
+
+void MotorIdle() {
+
+  digitalWrite(In1, LOW);   //  direction pin Motor 1
+  digitalWrite(In2, LOW);   //  direction pin Motor 1
+  digitalWrite(In3, LOW);   //  direction pin Motor 2
+  digitalWrite(In4, LOW);   //  direction pin Motor 2 
+
+  digitalWrite(l2, LOW);
+}
+
+//  __________________________  Motor commands  __________________________  //
+
+//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////  Created Funtions  /////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+
 void setup() {
+
+  pinMode(l2, OUTPUT);    //  Red LED
+  pinMode(In1, OUTPUT);   //  Motor 1
+  pinMode(In2, OUTPUT);   //  Motor 1
+  pinMode(In3, OUTPUT);   //  Motor 2
+  pinMode(In4, OUTPUT);   //  Motor 2
+  pinMode(ENA, OUTPUT);   //  PWM Motor 1
+  pinMode(ENB, OUTPUT);   //  PWM Motor 2
+  pinMode(BPin, INPUT);   //  Input Button
+
+  servo1.attach(servoPin1);   //  Servo motor 1
+  servo2.attach(servoPin2);   //  Servo motor 2
 
   Serial.begin(115200);
   conex();
