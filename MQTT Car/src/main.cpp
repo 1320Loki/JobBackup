@@ -24,11 +24,130 @@ const unsigned long period1 = 1500;   //
 const unsigned long period2 = 500;    //
 //--------------------- Milis function ---------------------//
 
+//--------------------- Code essencials --------------------//
+const char* ssid = "JosePC";            //  Name of WIFI Network
+const char* password = "esp32wish";     //  Password
+
+#define mqtt_server "192.168.1.200"     //  IP of MQTT BROKER
+WiFiClient MqttWAC;                        //  Name of the MQTT CLIENT
+PubSubClient client(MqttWAC);
+
+//  Trialing and debbuging
+float num;
+//--------------------- Code essencials --------------------//
+
+void conex()  {
+  Serial.println();
+  Serial.println("**************************************");
+  Serial.print("Connecting to ");       // begin Wifi connect
+  Serial.println(ssid);
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+  delay(2000);
+  WiFi.begin(ssid, password);
+  int wific = 0;
+  
+  while (WiFi.status() != WL_CONNECTED) 
+  {
+    delay(1000);
+    Serial.println("CONECTANDO");
+    wific++;
+    if (wific > 5){
+      ESP.restart();
+    }
+  }
+  
+  Serial.println("");
+  Serial.println("WiFi connected");  
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+}
+
+void reconnect() {
+
+  while (!client.connected()) {
+
+    Serial.print("Attempting MQTT connection...");
+
+    if (client.connect("")) {
+
+      Serial.println("connected");
+      client.subscribe("Trial");
+    }
+
+    else  {
+
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      // Wait 5 seconds before retrying
+      delay(5000);
+}  }  }
+
+void callback(char* topic, byte* message, unsigned int length)  {
+  Serial.print("Message arrived on topic: ");
+  Serial.print(topic);
+  Serial.print(". Message: ");
+  String messageTemp;
+  
+  for (int i = 0; i < length; i++) {
+    Serial.print((char)message[i]);
+    messageTemp += (char)message[i];
+  }
+
+  Serial.println();
+  if (String(topic) == "Trial") {  Serial.println("Trial arrived"); }
+}
 
 void setup() {
-  // put your setup code here, to run once:
+
+  Serial.begin(115200);
+  conex();
+  client.setServer(mqtt_server, 1883);
+  client.setCallback(callback);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+
+  if (!client.connected()) {  reconnect();}     //  mqtt server conex
+
+  StaticJsonDocument<80> doc;                   //  JSON static DOC
+  char output[80];
+
+  current = millis();
+  if(current - start >= period1) {
+
+    num = random(0, 25);
+    doc["n"] = num;
+
+    serializeJson(doc, output);                 //  Json serialization
+    Serial.println(output);                     
+
+    client.publish("Trial", output);            //  MQTT publishing
+
+    start = millis();
+  }
 }
+
+
+/*
+
+
+  StaticJsonDocument<80> doc;                   //  JSON static DOC
+  char output[80];
+
+  current = millis();
+  if(current - start >= period1) {
+
+    num = random(0, 25);
+    doc["n"] = num;
+
+    serializeJson(doc, output);                 //  Json serialization
+    Serial.println(output);                     
+
+    client.publish("Trial", output);            //  MQTT publishing
+
+    start = millis();
+  }
+
+*/
