@@ -63,25 +63,29 @@ void conex()  {
   Serial.println(WiFi.localIP());
 }
 
-void reconnect() {
-
-  while (!client.connected()) {
-
-    Serial.print("Attempting MQTT connection...");
-
-    if (client.connect("")) {
-
-      Serial.println("connected");
-      client.subscribe("Trial");
-    }
-
-    else  {
-
-      Serial.print("failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
-      delay(5000);
+void reconnect() 
+{
+  // Loop until we're reconnected
+  int counter = 0;
+  while (!client.connected()) 
+  {
+    if (counter==2) { ESP.restart();}
+    counter+=1;
+    Serial.print("Attempting MQTT connection...\n");
+    // Attempt to connect
+  
+    if (client.connect("rtu2"))
+    {
+        Serial.println("Connected!!!");
+        Serial.println("**************************************\n");
+    } 
+    else 
+    {
+        Serial.print("failed, rc=");
+        Serial.print(client.state());
+        Serial.println(" try again in 5 seconds");
+        // Wait 5 seconds before retrying
+        delay(5000);
 }  }  }
 
 void callback(char* topic, byte* message, unsigned int length)  {
@@ -99,6 +103,17 @@ void callback(char* topic, byte* message, unsigned int length)  {
   if (String(topic) == "Trial") {  Serial.println("Trial arrived"); }
 }
 
+void Alive()  {
+
+  StaticJsonDocument<80> doc2;                 //  JSON static DOC
+  char output[80];
+  doc2["Status"] = "Alive";
+
+  serializeJson(doc2, output);                 //  Json serialization
+  Serial.println(output); 
+  client.publish("Cart Status", output);             //  MQTT publishing
+}
+
 void setup() {
 
   Serial.begin(115200);
@@ -110,20 +125,11 @@ void setup() {
 void loop() {
 
   if (!client.connected()) {  reconnect();}     //  mqtt server conex
-
-  StaticJsonDocument<80> doc;                   //  JSON static DOC
-  char output[80];
-
   current = millis();
+
   if(current - start >= period1) {
-
-    num = random(0, 25);
-    doc["n"] = num;
-
-    serializeJson(doc, output);                 //  Json serialization
-    Serial.println(output);                     
-
-    client.publish("Trial", output);            //  MQTT publishing
+    
+    Alive();
 
     start = millis();
   }
@@ -131,7 +137,6 @@ void loop() {
 
 
 /*
-
 
   StaticJsonDocument<80> doc;                   //  JSON static DOC
   char output[80];
