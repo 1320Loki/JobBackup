@@ -166,6 +166,15 @@ void TimeLvl(int time)  {
     delay(150); 
     break;
 
+  case 3:     //  1 minutes
+    Serial.println("Set temp to 0");
+    QuickButton(2);                       
+    digitalWrite(out[5], HIGH);           
+    delay(2500);                       
+    digitalWrite(out[5], LOW);            
+    delay(150); 
+    break;
+
   case 5:     //  5 minutes
     Serial.println("Set temp to 0");
     QuickButton(2);                       
@@ -212,6 +221,8 @@ void TriggerBuzzer () {
   delay(1000);
   for (;;)  {
     BuzzerValue = analogRead(BuzzerPin);
+    Serial.println(counter1);
+    Serial.println(BuzzerValue);
     if (BuzzerValue < 800)  { 
       counter1++;
 
@@ -219,7 +230,6 @@ void TriggerBuzzer () {
         Serial.println("STOPING BUZZ DETECTED... RESTETING Soon");
         delay(1000);
         ResetButton();
-        digitalWrite(RobotSignal, HIGH);
         delay(100);
         break;
       } }
@@ -252,19 +262,21 @@ void loop() {
 
   if(current - start >= period1)  {
 
-    digitalWrite(RobotSignal, LOW);
+    digitalWrite(RobotSignal, HIGH);
     invalue = digitalRead(InSignal);
     Serial.println(invalue);
 
     if  (digitalRead(InSignal) == 1) {
 
+      digitalWrite(RobotSignal, LOW);
+      
       ResetButton();      //  Resets all parameters
       
-      TimeLvl(1);         //  Values (0 1 2 3 5 10 30 60 99)
+      TimeLvl(3);         //  Values (0 1 3 5 10 30 60 99)
              
       SpeedLvl(0);        //  Values (0 1 2 3 4)
              
-      TempLvl(0);       //  Values (0 60 100 120)
+      TempLvl(100);       //  Values (0 60 100 120)
           
       StartButton();      //  Start cooking process
 
