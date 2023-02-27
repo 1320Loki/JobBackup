@@ -31,7 +31,7 @@ const char* password = "esp32wish";     //  Password
 
 #define mqtt_server "192.168.1.200"     //  IP of MQTT BROKER
 WiFiClient MqttWAC;                     //  Name of the MQTT CLIENT
-PubSubClient client(MqttWAC);
+PubSubClient client(MqttWAC);           //  Pub of mqtt
 
 //  Trialing and debbuging
 float num;
@@ -221,13 +221,14 @@ void MotorIdle() {
 void setup() {
 
   pinMode(l2, OUTPUT);    //  Red LED
+  pinMode(BPin, INPUT);   //  Button
+
   pinMode(In1, OUTPUT);   //  Motor 1
   pinMode(In2, OUTPUT);   //  Motor 1
   pinMode(In3, OUTPUT);   //  Motor 2
   pinMode(In4, OUTPUT);   //  Motor 2
   pinMode(ENA, OUTPUT);   //  PWM Motor 1
   pinMode(ENB, OUTPUT);   //  PWM Motor 2
-  pinMode(BPin, INPUT);   //  Input Button
 
   servo1.attach(servoPin1);   //  Servo motor 1
   servo2.attach(servoPin2);   //  Servo motor 2
@@ -250,26 +251,4 @@ void loop() {
     start = millis();
   }
 }
-
-
-/*
-
-  StaticJsonDocument<80> doc;                   //  JSON static DOC
-  char output[80];
-
-  current = millis();
-  if(current - start >= period1) {
-
-    num = random(0, 25);
-    doc["n"] = num;
-
-    serializeJson(doc, output);                 //  Json serialization
-    Serial.println(output);                     
-
-    client.publish("Trial", output);            //  MQTT publishing
-
-    start = millis();
-  }
-
-*/
 
