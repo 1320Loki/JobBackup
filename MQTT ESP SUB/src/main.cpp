@@ -32,7 +32,7 @@ const unsigned long period2 = 5000;
 const char* ssid = "JosePC";
 const char* password = "esp32wish";
 
-#define TrialTopic "Trial"
+#define TrialTopic "Trial"              //  Callback
 #define mqtt_server "192.168.1.200"     //  IP of MQTT BROKER
 WiFiClient rtu2;                        //  Name of the MQTT CLIENT
 PubSubClient client(rtu2);              //  CHANGE 

@@ -109,13 +109,8 @@ void callback(char* topic, byte* message, unsigned int length)  {
 
 void Alive()  {
 
-  StaticJsonDocument<80> doc2;                 //  JSON static DOC
-  char output[80];
-  doc2["Status"] = "Alive";
 
-  serializeJson(doc2, output);                 //  Json serialization
-  Serial.println(output); 
-  client.publish("Cart Status", output);             //  MQTT publishing
+
 }
 
 void setup() {
@@ -130,21 +125,15 @@ void loop() {
 
   if (!client.connected()) {  reconnect();}     //  mqtt server conex
 
-  StaticJsonDocument<80> doc;                   //  JSON static DOC
-  char output[80];
+                
 
   current = millis();
   if(current - start >= period1) {
 
-    num = random(0, 25);
-    doc["n"] = num;
-    doc["a"] = num;
 
-    serializeJson(doc, output);                 //  Json serialization
-    Serial.println(output);                     
 
-    client.publish("Trial", output);            //  MQTT publishing
-    Alive();
+
+    Alive();    //  Periodic mqtt connection validation msg
     
     
     
@@ -153,6 +142,46 @@ void loop() {
 
 }
 
-
-
 //http://www.steves-internet-guide.com/arduino-sending-receiving-json-mqtt/
+
+/*
+
+  StaticJsonDocument<80> doc;                   //  JSON static DOC
+  char output[80];
+  num = random(0, 25);
+  doc["n"] = num;
+  doc["a"] = num;
+
+  serializeJson(doc, output);                 //  Json serialization
+  Serial.println(output);     
+
+  client.publish("Trial", output);            //  MQTT publishing
+
+//////////////////////////////////////////////////////////////////////////
+
+  StaticJsonDocument<80> doc2;                 //  JSON static DOC
+  char output[80];
+  doc2["Status"] = "Alive";
+  doc2["AMA"] = "me";
+
+  serializeJson(doc2, output);                 //  Json serialization
+  Serial.println(output); 
+  client.publish("Cart Status", output);             //  MQTT publishing
+
+//////////////////////////////////////////////////////////////////////////
+
+  DynamicJsonDocument doc(2048);
+  JsonArray arr = doc.createNestedArray("Array");
+    arr.add(h);
+    arr.add(t);
+    arr.add(volt);
+    arr.add(num);
+    arr.add(bool_grid);
+    arr.add(bool_puerta);
+  char jsonStr[80];
+  serializeJson(doc,jsonStr);
+  Serial.print(jsonStr);
+  Serial.println();
+  client.publish("Nodo 2",jsonStr);  
+
+*/

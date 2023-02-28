@@ -21,7 +21,7 @@ https://patorjk.com/software/taag/#p=display&f=Big&t=MQTT
 //--------------------- Milis function ---------------------//
 unsigned long start;                  // Estructura De millis
 unsigned long current, current2;      //
-const unsigned long period1 = 1500;   //
+const unsigned long period1 = 2500;   //
 const unsigned long period2 = 500;    //
 //--------------------- Milis function ---------------------//
 
@@ -29,6 +29,7 @@ const unsigned long period2 = 500;    //
 const char* ssid = "JosePC";            //  Name of WIFI Network
 const char* password = "esp32wish";     //  Password
 
+#define TrialTopic "Trial"              //  MQTT Callback
 #define mqtt_server "192.168.1.200"     //  IP of MQTT BROKER
 WiFiClient MqttWAC;                     //  Name of the MQTT CLIENT
 PubSubClient client(MqttWAC);           //  Pub of mqtt
@@ -137,10 +138,13 @@ void Alive()  {
   StaticJsonDocument<80> doc2;                 //  JSON static DOC
   char output[80];
   doc2["Status"] = "Alive";
+  doc2["Penelope"] = "Alive";
 
   serializeJson(doc2, output);                 //  Json serialization
   Serial.println(output); 
   client.publish("Cart Status", output);       //  MQTT publishing
+  
+  
 }
 
 //  __________________________  WIFI Connects   __________________________  //
@@ -246,9 +250,37 @@ void loop() {
 
   if(current - start >= period1) {
     
-    Alive();
+    //Alive();
 
     start = millis();
   }
 }
 
+/*
+
+  StaticJsonDocument<80> doc2;                 //  JSON static DOC
+  char output[80];
+  doc2["Status"] = "Alive";
+  doc2["Penelope"] = "Alive";
+
+  serializeJson(doc2, output);                 //  Json serialization
+  Serial.println(output); 
+  client.publish("Cart Status", output);       //  MQTT publishing
+
+/////////////////////////////////////////////////////////////////////////
+
+  String Status = "Mamalo";
+  int ano = 69;
+  DynamicJsonDocument doc(2048);
+  JsonArray arr = doc.createNestedArray("Array");
+    arr.add(Status);
+    arr.add(ano);
+
+  char jsonStr[80];
+
+  serializeJson(doc,jsonStr);
+  Serial.print(jsonStr);
+  Serial.println();
+
+  client.publish("Nodo 2",jsonStr);
+*/
