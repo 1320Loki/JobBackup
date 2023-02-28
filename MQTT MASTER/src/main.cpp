@@ -253,7 +253,6 @@ void loop() {
   if(current - start >= period1) {
     
     Alive();
-
     start = millis();
   }
   client.loop();

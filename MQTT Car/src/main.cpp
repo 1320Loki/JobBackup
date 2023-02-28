@@ -1,38 +1,42 @@
 /*
-https://patorjk.com/software/taag/#p=display&f=Big&t=MQTT
-  __  __  ____ _______ _______ 
- |  \/  |/ __ \__   __|__   __|
- | \  / | |  | | | |     | |   
- | |\/| | |  | | | |     | |   
- | |  | | |__| | | |     | |   
- |_|  |_|\___\_\ |_|     |_|   
-                              
+https://patorjk.com/software/taag/#p=display&f=Big&t=MQTT%20CAR
+  __  __  ____ _______ _______    _____          _____  
+ |  \/  |/ __ \__   __|__   __|  / ____|   /\   |  __ \ 
+ | \  / | |  | | | |     | |    | |       /  \  | |__) |
+ | |\/| | |  | | | |     | |    | |      / /\ \ |  _  / 
+ | |  | | |__| | | |     | |    | |____ / ____ \| | \ \ 
+ |_|  |_|\___\_\ |_|     |_|     \_____/_/    \_\_|  \_\
+                                                                     
 */
 
 //--------------------- essencials Libs --------------------//
+
 #include <ArduinoJson.hpp>
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
 #include <Arduino.h>
 #include <Servo.h>
 #include "WiFi.h"
+
 //--------------------- essencials Libs --------------------//
 
 //--------------------- Milis function ---------------------//
 unsigned long start;                  // Estructura De millis
 unsigned long current, current2;      //
-const unsigned long period1 = 2500;   //
+const unsigned long period1 = 1500;   //
 const unsigned long period2 = 500;    //
 //--------------------- Milis function ---------------------//
 
 //--------------------- Code essencials --------------------//
-const char* ssid = "JosePC";            //  Name of WIFI Network
-const char* password = "esp32wish";     //  Password
+ 
+//  WIFI CONNECTIONS
+const char* ssid = "JosePC";
+const char* password = "esp32wish";
 
-#define TrialTopic "Trial"              //  MQTT Callback
+#define TrialTopic "Trial"              //  Callback
 #define mqtt_server "192.168.1.200"     //  IP of MQTT BROKER
-WiFiClient MqttWAC;                     //  Name of the MQTT CLIENT
-PubSubClient client(MqttWAC);           //  Pub of mqtt
+WiFiClient Car1;                        //  MQTT CLIENT
+PubSubClient client(Car1);              //  Must CHANGE 4 every device
 
 //  Trialing and debbuging
 float num;
@@ -62,32 +66,37 @@ int BtState = 0, LastBtState = 0;   //  State pf the buttons
 //  SERVO MOTORS
 const int servoPin1 = 12, servoPin2 = 14;
 Servo servo1, servo2;
+
 //--------------------- Code essencials --------------------//
+
 
 //////////////////////////////////////////////////////////////////////////////
 /////////////////////////////  Created Funtions  /////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
 //  __________________________  WIFI Connects   __________________________  //
-
 void conex()  {
+
   Serial.println();
   Serial.println("**************************************");
   Serial.print("Connecting to ");       // begin Wifi connect
+
   Serial.println(ssid);
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
+  
   delay(2000);
   WiFi.begin(ssid, password);
   int wific = 0;
   
   while (WiFi.status() != WL_CONNECTED) {
+
     delay(1000);
     Serial.println("CONECTANDO");
     wific++;
-    if (wific > 5){
-      ESP.restart();
-  } }
+
+    if (wific > 5){ ESP.restart();  }
+  }
   
   Serial.println("");
   Serial.println("WiFi connected");  
@@ -95,26 +104,24 @@ void conex()  {
   Serial.println(WiFi.localIP());
 }
 
-void reconnect()  {
-  
-  int counter = 0;                
-  while (!client.connected()) 
-  {
-    if (counter==2) { ESP.restart();}
-    counter+=1;
-    Serial.print("Attempting MQTT connection...\n");
-    // Attempt to connect
-  
-    if (client.connect("MqttWAC")) {    //  Broker
-        Serial.println("Connected!!!");
-        Serial.println("**************************************\n");
-    } 
+void reconnect() {
+
+  while (!client.connected()) {
+
+    Serial.print("Attempting MQTT connection...");
+    if (client.connect("")) {
+
+      Serial.println("connected");
+      client.subscribe("Trial");        //  topics subscribed to...
+    }
+
     else  {
-        Serial.print("failed, rc=");
-        Serial.print(client.state());
-        Serial.println(" try again in 5 seconds");
-        // Wait 5 seconds before retrying
-        delay(5000);
+
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      // Wait 5 seconds before retrying
+      delay(5000);
 }  }  }
 
 void callback(char* topic, byte* message, unsigned int length)  {
@@ -125,12 +132,14 @@ void callback(char* topic, byte* message, unsigned int length)  {
   String messageTemp;
   
   for (int i = 0; i < length; i++) {
+
     Serial.print((char)message[i]);
     messageTemp += (char)message[i];
   }
 
   Serial.println();
   if (String(topic) == "Trial") {  Serial.println("Trial arrived"); }
+
 }
 
 void Alive()  {
@@ -138,19 +147,14 @@ void Alive()  {
   StaticJsonDocument<80> doc2;                 //  JSON static DOC
   char output[80];
   doc2["Status"] = "Alive";
-  doc2["Penelope"] = "Alive";
 
   serializeJson(doc2, output);                 //  Json serialization
   Serial.println(output); 
   client.publish("Cart Status", output);       //  MQTT publishing
-  
-  
 }
-
 //  __________________________  WIFI Connects   __________________________  //
 
 //  __________________________  Servo commands  __________________________  //
-
 void servoLeft() {
   servo1.write(180);
   delay(1500);
@@ -165,11 +169,9 @@ void servoReset() {
   servo1.write(90);
   delay(3000);
 }
-
 //  __________________________  Servo commands  __________________________  //
 
 //  __________________________  Motor commands  __________________________  //
-
 void MovePositive() {
 
   digitalWrite(l2, HIGH);
@@ -215,14 +217,13 @@ void MotorIdle() {
 
   digitalWrite(l2, LOW);
 }
-
 //  __________________________  Motor commands  __________________________  //
 
 //////////////////////////////////////////////////////////////////////////////
 /////////////////////////////  Created Funtions  /////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-void setup() {
+void setup()  {
 
   pinMode(l2, OUTPUT);    //  Red LED
   pinMode(BPin, INPUT);   //  Button
@@ -239,6 +240,7 @@ void setup() {
 
   Serial.begin(115200);
   conex();
+
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
 }
@@ -250,11 +252,12 @@ void loop() {
 
   if(current - start >= period1) {
     
-    //Alive();
-
+    Alive();
     start = millis();
   }
+  client.loop();
 }
+
 
 /*
 
