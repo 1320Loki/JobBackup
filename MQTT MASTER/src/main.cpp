@@ -279,4 +279,34 @@ void reconnect() {
       delay(5000);
 }  }  }
 
+
+
+
+  StaticJsonDocument<80> doc2;                 //  JSON static DOC
+  char output[80];
+  doc2["Status"] = "Alive";
+  doc2["Penelope"] = "Alive";
+
+  serializeJson(doc2, output);                 //  Json serialization
+  Serial.println(output); 
+  client.publish("Cart Status", output);       //  MQTT publishing
+
+/////////////////////////////////////////////////////////////////////////
+
+  String Status = "Mamalo";
+  int ano = 69;
+  DynamicJsonDocument doc(2048);
+  JsonArray arr = doc.createNestedArray("Array");
+    arr.add(Status);
+    arr.add(ano);
+
+  char jsonStr[80];
+
+  serializeJson(doc,jsonStr);
+  Serial.print(jsonStr);
+  Serial.println();
+
+  client.publish("Nodo 2",jsonStr);
+
+  
 */

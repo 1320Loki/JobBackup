@@ -38,6 +38,8 @@ const char* password = "esp32wish";
 WiFiClient Car1;                        //  MQTT CLIENT
 PubSubClient client(Car1);              //  Must CHANGE 4 every device
 
+String MqttInMsg;                       //  MQTT msg
+
 //  Trialing and debbuging
 float num;
 
@@ -62,6 +64,8 @@ int Pos = 0;                        //  Cart Positions.  Values are 1-3
 bool Returning = false;             //  Returning state
 int BtCont = 0, valid = 0;          //  Validation for the Buton algorithm
 int BtState = 0, LastBtState = 0;   //  State pf the buttons
+
+int PosCont = 0, LastPosState = 0;  //  Pos Validation
 
 //  SERVO MOTORS
 const int servoPin1 = 12, servoPin2 = 14;
@@ -132,15 +136,54 @@ void callback(char* topic, byte* message, unsigned int length)  {
   String messageTemp;
   
   for (int i = 0; i < length; i++) {
-
     Serial.print((char)message[i]);
     messageTemp += (char)message[i];
   }
 
+  MqttInMsg = messageTemp;
   Serial.println();
-  if (String(topic) == "Trial") {  Serial.println("Trial arrived"); }
 
-}
+  if (String(topic) == "Trial") {
+
+    Serial.println("Trial arrived");
+
+    if (MqttInMsg == "3L" || MqttInMsg == "3l" )  { 
+      Serial.println("3L msg bien");
+      Side = 1;
+      Pos = 3;
+    }
+
+    if (MqttInMsg == "3R" || MqttInMsg == "3r" )  { 
+      Serial.println("3R msg bien"); 
+      Side = 2;
+      Pos = 3;
+    }
+
+    if (MqttInMsg == "2L" || MqttInMsg == "2l" )  { 
+      Serial.println("2L msg bien");
+      Side = 1;
+      Pos = 2;
+    }
+
+    if (MqttInMsg == "2R" || MqttInMsg == "2r" )  { 
+      Serial.println("2R msg bien");
+      Side = 2;
+      Pos = 2;
+    }
+
+    if (MqttInMsg == "1L" || MqttInMsg == "1l" )  { 
+      Serial.println("1L msg bien");
+      Side = 1;
+      Pos = 1;
+    }
+
+    if (MqttInMsg == "1R" || MqttInMsg == "1r" )  { 
+      Serial.println("1R msg bien");
+      Side = 2;
+      Pos = 1;
+    }
+
+}   }
 
 void Alive()  {
 
@@ -216,8 +259,33 @@ void MotorIdle() {
   digitalWrite(In4, LOW);   //  direction pin Motor 2 
 
   digitalWrite(l2, LOW);
+
+ StaticJsonDocument<80> Position;                 //  JSON static DOC
+  char output[80];
+  Position["Postion"] = "P0";
+
+  serializeJson(Position, output);                 //  Json serialization
+  Serial.println(output); 
+  client.publish("Cart 1.1 postion", output);           //  MQTT publishing 
 }
 //  __________________________  Motor commands  __________________________  //
+
+void GoTo(int valid, int Pos, int Side) {
+/*
+  while(valid > 0){     // Movimiento
+
+    Serial.println(valid);
+    Serial.print("Valor de la Pocision P = ");
+    Serial.println(Pos);
+    Serial.print("Valor del lado = ");
+    Serial.println(Side);
+    delay(2000); 
+    valid = 0;
+  }
+  //  */
+  //Pos = 0;
+  Serial.println(valid);
+}
 
 //////////////////////////////////////////////////////////////////////////////
 /////////////////////////////  Created Funtions  /////////////////////////////
@@ -248,11 +316,24 @@ void setup()  {
 void loop() {
 
   if (!client.connected()) {  reconnect();}     //  mqtt server conex
+  
   current = millis();
 
   if(current - start >= period1) {
     
     Alive();
+    MotorIdle();
+    Serial.println("IDLE");
+
+    Serial.print("Pos ");
+    Serial.println(Pos);
+
+    if  (Pos > 0)  {
+      GoTo(valid, Pos, Side);
+      Pos = 0;
+    }
+    
+
     start = millis();
   }
   client.loop();
@@ -261,29 +342,182 @@ void loop() {
 
 /*
 
-  StaticJsonDocument<80> doc2;                 //  JSON static DOC
-  char output[80];
-  doc2["Status"] = "Alive";
-  doc2["Penelope"] = "Alive";
 
-  serializeJson(doc2, output);                 //  Json serialization
-  Serial.println(output); 
-  client.publish("Cart Status", output);       //  MQTT publishing
+    while(valid > 0){     // Movimiento
+    
+      delayMicroseconds(10000);
+      Serial.print("Valor de la Pocision P = ");
+      Serial.println(Pos);
+      Serial.print("Valor del lado = ");
+      Serial.println(Side);   
 
-/////////////////////////////////////////////////////////////////////////
+          switch (Pos) {
+            
+            // -----------------------------  Case 1 ----------------------------- //
+            case 1: {
 
-  String Status = "Mamalo";
-  int ano = 69;
-  DynamicJsonDocument doc(2048);
-  JsonArray arr = doc.createNestedArray("Array");
-    arr.add(Status);
-    arr.add(ano);
+              Serial.print("Motor Running, Case 1, Pocision P = ");
+              Serial.println(Pos);
+              Serial.print("Side = ");
+              Serial.println(Side);
+              BtCont = 0;
 
-  char jsonStr[80];
+              while(Pos != BtCont){
 
-  serializeJson(doc,jsonStr);
-  Serial.print(jsonStr);
-  Serial.println();
+                if(Returning == false){ MovePositive();}
+                else if(Returning == true){ MoveNegative();}
+                
+                BtState = digitalRead(BPin);
+                Serial.print("Boton ");
+                Serial.println(BtState);
 
-  client.publish("Nodo 2",jsonStr);
+                if(BtState != LastBtState && BtState == 1){
+                  BtCont++;
+                  Serial.print("Counter Value = ");
+                  Serial.println(BtCont);
+                }
+                LastBtState = BtState;
+
+                if(BtCont == Pos && Returning == false){    //  Motor se tiene que detener
+                  BtCont = 0;                               //  Para poder dropear alimentos
+                  Returning = true;
+                  MotorStop();
+                  delay(500);
+
+                  if(Side == 1) { servoLeft(); }
+                  else if(Side == 2) { servoRight(); }
+
+                  delay(1000);
+                  servoReset();
+
+                  Serial.println("Returning begin");
+                }
+                
+                if(BtCont == Pos && Returning == true){
+                  valid = 0;
+                  BtCont = 0;
+                  Returning = false;
+
+                  Serial.println("P inicial");
+                  break;
+                }
+                delay(500);
+                Serial.println("While final part");
+              }
+              break;
+            }
+
+            // -----------------------------  Case 2 ----------------------------- //
+            case 2: {
+
+              Serial.print("Motor Running, Case 1, Pocision P = ");
+              Serial.println(Pos);
+              Serial.print("Side = ");
+              Serial.println(Side);
+              BtCont = 0;
+
+              while(Pos != BtCont){
+
+                if(Returning == false){ MovePositive();}        //  Move Positive
+                else if(Returning == true){ MoveNegative();}    //  Move Negative
+                
+                BtState = digitalRead(BPin);
+                Serial.print("Boton ");
+                Serial.println(BtState);
+
+                if(BtState != LastBtState && BtState == 1){
+                  BtCont++;
+                  Serial.print("Counter Value = ");
+                  Serial.println(BtCont);
+                }
+                LastBtState = BtState;
+
+                if(BtCont == Pos && Returning == false){    //  Motor se tiene que detener
+                  BtCont = 0;                               //  Para poder dropear alimentos
+                  Returning = true;
+                  MotorStop();
+                  delay(500);
+
+                  if(Side == 1) { servoLeft(); }
+                  else if(Side == 2) { servoRight(); }
+
+                  delay(1000);
+                  servoReset();
+
+                  Serial.println("Returning begin");
+                }
+                
+                if(BtCont == Pos && Returning == true){
+                  valid = 0;
+                  BtCont = 0;
+                  Returning = false;
+
+                  Serial.println("P inicial");
+                  break;
+                }
+                delay(500);
+                Serial.println("While final part");
+              }
+              break;
+            }
+
+            // -----------------------------  Case 3 ----------------------------- //
+            case 3: {
+
+              Serial.print("Motor Running, Case 1, Pocision P = ");
+              Serial.println(Pos);
+              Serial.print("Side = ");
+              Serial.println(Side);
+              BtCont = 0;
+
+              while(Pos != BtCont){
+
+                if(Returning == false){ MovePositive();}
+                else if(Returning == true){ MoveNegative();}
+                
+                BtState = digitalRead(BPin);
+                Serial.print("Boton ");
+                Serial.println(BtState);
+
+                if(BtState != LastBtState && BtState ==1){
+                  BtCont++;
+                  Serial.print("Counter Value = ");
+                  Serial.println(BtCont);
+                }
+                LastBtState = BtState;
+
+                if(BtCont == Pos && Returning == false){    //  Motor se tiene que detener
+                  BtCont = 0;                               //  Para poder dropear alimentos
+                  Returning = true;
+                  MotorStop();
+                  delay(500);
+
+                  if(Side == 1) { servoLeft(); }
+                  else if(Side == 2) { servoRight(); }
+
+                  delay(1000);
+                  servoReset();
+
+                  Serial.println("Returning begin");
+                }
+                
+                if(BtCont == Pos && Returning == true){
+                  valid = 0;
+                  BtCont = 0;
+                  Returning = false;
+
+                  Serial.println("P inicial");
+                  break;
+                }
+                delay(500);
+                Serial.println("While final part");
+              }
+              break;
+            }
+            // -----------------------------  Case 3 ----------------------------- //
+          }     // Switch Case
+
+    } 
+
+
 */
