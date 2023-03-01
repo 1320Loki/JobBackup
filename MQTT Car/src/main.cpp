@@ -270,22 +270,201 @@ void MotorIdle() {
 }
 //  __________________________  Motor commands  __________________________  //
 
-void GoTo(int valid, int Pos, int Side) {
-/*
-  while(valid > 0){     // Movimiento
+void GoTo (int valid, int Pos, int Side) {
 
-    Serial.println(valid);
+  while (Pos > 0) {     // Movimiento
+  
+    delayMicroseconds(10000);
     Serial.print("Valor de la Pocision P = ");
     Serial.println(Pos);
     Serial.print("Valor del lado = ");
     Serial.println(Side);
-    delay(2000); 
-    valid = 0;
-  }
-  //  */
-  //Pos = 0;
-  Serial.println(valid);
-}
+
+    switch (Pos) {
+
+      case 3: {
+
+        Serial.print("Motor Running, Case 3, Position P = ");
+        Serial.println(Pos);
+        Serial.print("Tilting Side = ");
+        Serial.println(Side);
+
+        BtCont = 0;
+        Returning = false;
+
+        while (Pos != BtCont) {
+
+          if (Returning == false) { MovePositive();}
+          else if (Returning == true) { MoveNegative();}
+
+          BtState = digitalRead(BPin);
+          Serial.print("Boton ");
+          Serial.println(BtState);
+          
+          if (BtState != LastBtState && BtState == 1) {   //    Button or positioning sensor
+            
+            BtCont++;
+            Serial.print("Counter Value = ");
+            Serial.println(BtCont);
+          }
+
+          LastBtState = BtState;
+          
+          if (BtCont == Pos && Returning == false) {      //    Button or positioning sensor   
+            
+            BtCont = 0;                                 
+            Returning = true;
+            MotorStop();
+            delay(500);
+
+            if(Side == 1) { servoLeft(); }
+            else if(Side == 2) { servoRight(); }
+
+            delay(1000);
+            servoReset();
+
+            Serial.println("Returning begin");
+          }
+
+          if (BtCont == Pos && Returning == true)  {    //    Reseting parameters
+            
+            BtCont = 0;
+            Returning = false;
+            Pos = 0;
+            Serial.println("P inicial");
+            break;
+          }   
+               
+        delay(100);
+        }               //    While
+
+        break;
+      }                 //    Case 3
+
+      case 2: {
+
+        Serial.print("Motor Running, Case 2, Position P = ");
+        Serial.println(Pos);
+        Serial.print("Tilting Side = ");
+        Serial.println(Side);
+
+        BtCont = 0;
+        Returning = false;
+
+        while (Pos != BtCont) {
+
+          if (Returning == false) { MovePositive();}
+          else if (Returning == true) { MoveNegative();}
+
+          BtState = digitalRead(BPin);
+          Serial.print("Boton ");
+          Serial.println(BtState);
+          
+          if (BtState != LastBtState && BtState == 1) {   //    Button or positioning sensor
+            
+            BtCont++;
+            Serial.print("Counter Value = ");
+            Serial.println(BtCont);
+          }
+
+          LastBtState = BtState;
+          
+          if (BtCont == Pos && Returning == false) {      //    Button or positioning sensor   
+            
+            BtCont = 0;                                 
+            Returning = true;
+            MotorStop();
+            delay(500);
+
+            if(Side == 1) { servoLeft(); }
+            else if(Side == 2) { servoRight(); }
+
+            delay(1000);
+            servoReset();
+
+            Serial.println("Returning begin");
+          }
+
+          if (BtCont == Pos && Returning == true)  {    //    Reseting parameters
+            
+            BtCont = 0;
+            Returning = false;
+            Pos = 0;
+            Serial.println("P inicial");
+            break;
+          }   
+               
+        delay(100);
+        }               //    While
+
+        break;
+      }
+//
+      case 1: {
+
+        Serial.print("Motor Running, Case 1, Position P = ");
+        Serial.println(Pos);
+        Serial.print("Tilting Side = ");
+        Serial.println(Side);
+
+        BtCont = 0;
+        Returning = false;
+
+        while (Pos != BtCont) {
+
+          if (Returning == false) { MovePositive();}
+          else if (Returning == true) { MoveNegative();}
+
+          BtState = digitalRead(BPin);
+          Serial.print("Boton ");
+          Serial.println(BtState);
+          
+          if (BtState != LastBtState && BtState == 1) {   //    Button or positioning sensor
+            
+            BtCont++;
+            Serial.print("Counter Value = ");
+            Serial.println(BtCont);
+          }
+
+          LastBtState = BtState;
+          
+          if (BtCont == Pos && Returning == false) {      //    Button or positioning sensor   
+            
+            BtCont = 0;                                 
+            Returning = true;
+            MotorStop();
+            delay(500);
+
+            if(Side == 1) { servoLeft(); }
+            else if(Side == 2) { servoRight(); }
+
+            delay(1000);
+            servoReset();
+
+            Serial.println("Returning begin");
+          }
+
+          if (BtCont == Pos && Returning == true)  {    //    Reseting parameters
+            
+            BtCont = 0;
+            Returning = false;
+            Pos = 0;
+            Serial.println("P inicial");
+            break;
+          }   
+               
+        delay(100);
+        }               //    While
+
+        break;
+      }
+//
+    }                   //    Switch case
+  
+  
+  }                     //    While
+
+}                       //    Loop
 
 //////////////////////////////////////////////////////////////////////////////
 /////////////////////////////  Created Funtions  /////////////////////////////
@@ -339,185 +518,3 @@ void loop() {
   client.loop();
 }
 
-
-/*
-
-
-    while(valid > 0){     // Movimiento
-    
-      delayMicroseconds(10000);
-      Serial.print("Valor de la Pocision P = ");
-      Serial.println(Pos);
-      Serial.print("Valor del lado = ");
-      Serial.println(Side);   
-
-          switch (Pos) {
-            
-            // -----------------------------  Case 1 ----------------------------- //
-            case 1: {
-
-              Serial.print("Motor Running, Case 1, Pocision P = ");
-              Serial.println(Pos);
-              Serial.print("Side = ");
-              Serial.println(Side);
-              BtCont = 0;
-
-              while(Pos != BtCont){
-
-                if(Returning == false){ MovePositive();}
-                else if(Returning == true){ MoveNegative();}
-                
-                BtState = digitalRead(BPin);
-                Serial.print("Boton ");
-                Serial.println(BtState);
-
-                if(BtState != LastBtState && BtState == 1){
-                  BtCont++;
-                  Serial.print("Counter Value = ");
-                  Serial.println(BtCont);
-                }
-                LastBtState = BtState;
-
-                if(BtCont == Pos && Returning == false){    //  Motor se tiene que detener
-                  BtCont = 0;                               //  Para poder dropear alimentos
-                  Returning = true;
-                  MotorStop();
-                  delay(500);
-
-                  if(Side == 1) { servoLeft(); }
-                  else if(Side == 2) { servoRight(); }
-
-                  delay(1000);
-                  servoReset();
-
-                  Serial.println("Returning begin");
-                }
-                
-                if(BtCont == Pos && Returning == true){
-                  valid = 0;
-                  BtCont = 0;
-                  Returning = false;
-
-                  Serial.println("P inicial");
-                  break;
-                }
-                delay(500);
-                Serial.println("While final part");
-              }
-              break;
-            }
-
-            // -----------------------------  Case 2 ----------------------------- //
-            case 2: {
-
-              Serial.print("Motor Running, Case 1, Pocision P = ");
-              Serial.println(Pos);
-              Serial.print("Side = ");
-              Serial.println(Side);
-              BtCont = 0;
-
-              while(Pos != BtCont){
-
-                if(Returning == false){ MovePositive();}        //  Move Positive
-                else if(Returning == true){ MoveNegative();}    //  Move Negative
-                
-                BtState = digitalRead(BPin);
-                Serial.print("Boton ");
-                Serial.println(BtState);
-
-                if(BtState != LastBtState && BtState == 1){
-                  BtCont++;
-                  Serial.print("Counter Value = ");
-                  Serial.println(BtCont);
-                }
-                LastBtState = BtState;
-
-                if(BtCont == Pos && Returning == false){    //  Motor se tiene que detener
-                  BtCont = 0;                               //  Para poder dropear alimentos
-                  Returning = true;
-                  MotorStop();
-                  delay(500);
-
-                  if(Side == 1) { servoLeft(); }
-                  else if(Side == 2) { servoRight(); }
-
-                  delay(1000);
-                  servoReset();
-
-                  Serial.println("Returning begin");
-                }
-                
-                if(BtCont == Pos && Returning == true){
-                  valid = 0;
-                  BtCont = 0;
-                  Returning = false;
-
-                  Serial.println("P inicial");
-                  break;
-                }
-                delay(500);
-                Serial.println("While final part");
-              }
-              break;
-            }
-
-            // -----------------------------  Case 3 ----------------------------- //
-            case 3: {
-
-              Serial.print("Motor Running, Case 1, Pocision P = ");
-              Serial.println(Pos);
-              Serial.print("Side = ");
-              Serial.println(Side);
-              BtCont = 0;
-
-              while(Pos != BtCont){
-
-                if(Returning == false){ MovePositive();}
-                else if(Returning == true){ MoveNegative();}
-                
-                BtState = digitalRead(BPin);
-                Serial.print("Boton ");
-                Serial.println(BtState);
-
-                if(BtState != LastBtState && BtState ==1){
-                  BtCont++;
-                  Serial.print("Counter Value = ");
-                  Serial.println(BtCont);
-                }
-                LastBtState = BtState;
-
-                if(BtCont == Pos && Returning == false){    //  Motor se tiene que detener
-                  BtCont = 0;                               //  Para poder dropear alimentos
-                  Returning = true;
-                  MotorStop();
-                  delay(500);
-
-                  if(Side == 1) { servoLeft(); }
-                  else if(Side == 2) { servoRight(); }
-
-                  delay(1000);
-                  servoReset();
-
-                  Serial.println("Returning begin");
-                }
-                
-                if(BtCont == Pos && Returning == true){
-                  valid = 0;
-                  BtCont = 0;
-                  Returning = false;
-
-                  Serial.println("P inicial");
-                  break;
-                }
-                delay(500);
-                Serial.println("While final part");
-              }
-              break;
-            }
-            // -----------------------------  Case 3 ----------------------------- //
-          }     // Switch Case
-
-    } 
-
-
-*/
