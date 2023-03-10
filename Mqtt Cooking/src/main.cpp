@@ -1,33 +1,32 @@
 //--------------------- Code essencials --------------------//
 #include <Arduino.h>
 #include <Ethernet.h>
+#include <ArduinoJson.h>
+#include <PubSubClient.h>
 
-//--------------------- Milis function ---------------------//
-unsigned long start;                  // Estructura De millis
+unsigned long start;                  //  Estructura De millis
 unsigned long current, current2;      //
 const unsigned long period1 = 1000;   //
 const unsigned long period2 = 500;    //
-//--------------------- Milis function ---------------------//
 
 int out[] = {2,3,4,5,6,7};
 int a = 0;
+
+IPAddress ip(192, 168, 1, 220);       //  IP Address
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+
+const char* server = "192.168.1.200";
+
+// Ethernet and MQTT related objects
+EthernetClient ethClient;
+PubSubClient mqttClient(ethClient);
+String MqttInMsg;
+
 //--------------------- Code essencials --------------------//
 
-void setup() {
-
-  Serial.begin(9600);
-  Serial.println("");
-  Serial.println("INICIO DE SISTEMA ");
-
-  for (int i=0; i<9; i=i+1){
-
-    delayMicroseconds(100);
-    Serial.print("OUTPUT---> ");
-    //Serial.println(out[i]);
-    pinMode(out[i], OUTPUT);
-  }
-
-}
+//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////  Created Funtions  /////////////////////////////
+////////////////////////////////////////////////////////////////////////////// 
 
 void QuickButton(int i) {
 
@@ -85,6 +84,28 @@ void TeaRecipe(int tp, int sp, int tm, int st, int mn, int ps) {
   QuickButton(st);
   delayMicroseconds(10000);
   //  Start Cooking
+}
+
+//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////  Created Funtions  /////////////////////////////
+////////////////////////////////////////////////////////////////////////////// 
+
+void setup() {
+
+  Serial.begin(9600);
+  Serial.println("");
+  Serial.println("INICIO DE SISTEMA ");
+
+  for (int i=0; i<9; i+1){
+
+    delayMicroseconds(100);
+    Serial.print("OUTPUT---> ");
+    //Serial.println(out[i]);
+    pinMode(out[i], OUTPUT);
+  }
+
+    Ethernet.begin(mac, ip);
+    delay(1000);
 
 }
 
