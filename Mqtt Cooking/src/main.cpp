@@ -1,142 +1,82 @@
-//--------------------- Code essencials --------------------//
+//--------------------- essencials Libs --------------------//
+#include <SPI.h>
 #include <Arduino.h>
 #include <Ethernet.h>
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
+//--------------------- essencials Libs --------------------//
 
-unsigned long start;                  //  Estructura De millis
-unsigned long current, current2;      //
-const unsigned long period1 = 1000;   //
-const unsigned long period2 = 500;    //
-
-int out[] = {2,3,4,5,6,7};
-int a = 0;
-
-IPAddress ip(192, 168, 1, 220);       //  IP Address
+//--------------------- Code essencials --------------------//
+String MqttInMsg;
+IPAddress ip(192, 168, 1, 220);
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
 const char* server = "192.168.1.200";
 
+#define TrialTopic "Trial"              //  Callback
+#define mqtt_server "192.168.1.200"     //  IP of MQTT BROKER
+
 // Ethernet and MQTT related objects
 EthernetClient ethClient;
-PubSubClient mqttClient(ethClient);
-String MqttInMsg;
-
+PubSubClient client(ethClient);
 //--------------------- Code essencials --------------------//
 
 //////////////////////////////////////////////////////////////////////////////
 /////////////////////////////  Created Funtions  /////////////////////////////
-////////////////////////////////////////////////////////////////////////////// 
+//////////////////////////////////////////////////////////////////////////////
 
-void QuickButton(int i) {
+void reconnect() {
 
-  digitalWrite(out[i], HIGH);
-  Serial.print("relay on  ---> ");
-  Serial.println(out[i]);
-  delay(100);
+  while (!client.connected()) {
 
-  digitalWrite(out[i], LOW);
-  Serial.print("relay off ---> ");
-  Serial.println(out[i]);
-  delay(100);
+    Serial.print("Attempting MQTT connection...");
 
-}
+    if (client.connect("")) {
+      Serial.println("connected");
+      client.subscribe("Trial");        //  topics subscribed to...
+    }
 
-void SlowButton(int i, int timer) {
+    else  {
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      // Wait 5 seconds before retrying
+      delay(5000);
+}  }  }
 
-  digitalWrite(out[i], HIGH);
-  Serial.print("relay on  ---> ");
-  Serial.println(out[i]);
-  delay(timer);
+void callback(char* topic, byte* message, unsigned int length)    //Mqtt Callback
+{
+  Serial.print("Message arrived on topic: ");
+  Serial.print(topic);
+  Serial.print(". Message: ");
+  String messageTemp;
+  
+  for (int i = 0; i < length; i++) {
+    Serial.print((char)message[i]);
+    messageTemp += (char)message[i];
+  }
 
-  digitalWrite(out[i], LOW);
-  Serial.print("relay off ---> ");
-  Serial.println(out[i]);
-  delayMicroseconds(10000);
+  MqttInMsg = messageTemp;
+  Serial.println();
 
-}
+  if (String(topic) == "Spices_Input") {       //  String() is used to convert the in to a string needed for comparations
 
-void TeaRecipe(int tp, int sp, int tm, int st, int mn, int ps) {
-
-  QuickButton(tp);
-  //  Break IDLE
-
-  QuickButton(tp);   // SELECT TEMP  
-  delay(500);
-  SlowButton(ps, 3500);    // PLUS
-  delay(500);
-  //  Set Temperature to MAX
-
-  QuickButton(sp);   // SELECT TEMP  
-  delay(500);
-  SlowButton(mn, 2000);    // PLUS
-  delay(500);
-  QuickButton(ps);
-  delay(500);
-  //  Set Speed to MIN
-
-  QuickButton(tm);   // SELECT TEMP  
-  delay(500);
-  SlowButton(ps, 2500);    // PLUS
-  delay(500);
-  //  Set Speed to MIN
-
-  QuickButton(st);
-  delayMicroseconds(10000);
-  //  Start Cooking
-}
+    Serial.println("Trial arrived");
+    Serial.println(MqttInMsg);
+} }
 
 //////////////////////////////////////////////////////////////////////////////
 /////////////////////////////  Created Funtions  /////////////////////////////
-////////////////////////////////////////////////////////////////////////////// 
-
+//////////////////////////////////////////////////////////////////////////////
 void setup() {
 
   Serial.begin(9600);
-  Serial.println("");
-  Serial.println("INICIO DE SISTEMA ");
+  Ethernet.begin(mac, ip); 
+  delay(3000);   
 
-  for (int i=0; i<9; i+1){
-
-    delayMicroseconds(100);
-    Serial.print("OUTPUT---> ");
-    //Serial.println(out[i]);
-    pinMode(out[i], OUTPUT);
-  }
-
-    Ethernet.begin(mac, ip);
-    delay(1000);
-
+  client.setServer(server, 1883); 
+  client.setCallback(callback);
 }
 
 void loop() {
-
-  current = millis();
-
-  if(current - start >= period1)  {
-    /*
-    a++;
-    Serial.print("CONTADOR ");
-    Serial.println(a);
-  
-    if( a == 5) { TeaRecipe(0,1,2,3,4,5);}
-    */
-
-    start = millis();
-  } }
-
-/*
-out[0] = 2  = tp  = Temperature
-out[1] = 3  = sp  = Speed
-out[2] = 4  = tm  = Time
-out[3] = 5  = st  = Start
-out[4] = 6  = mn  = Minus
-out[5] = 7  = ps  = Plus
-Speed Limits ----> 0 to 4
-  Space 1
-Time Limits ----> 0:00 to 99:00
-  10 20 30 40 50 60
-  30segd
-Temp Limits ----> 0 to 120
-  0 30 40 50 60 70 80 90 100 110 120
-*/
+}
