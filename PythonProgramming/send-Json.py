@@ -34,33 +34,42 @@ messages = [
 JsonCooking = json.dumps(cookingSet)
 JsonCart = json.dumps(cartSet)
 
-# LOOP
+##       CODE LOOP       ##
+
 while True:
-    publish.multiple(
+
+    send = input("Press (cook) to send msg to cooking station and (cart) to send msg to cart. (m) For multiple msgs     ")
+
+
+
+    if send == "cook":        
+        # Publicar mensajes mqtt 
+        publish.single(
+            "Kitchen.1/Cooking.Station.1/Set",
+            payload=JsonCooking ,
+            qos=1,
+            hostname=broker_address,
+            port=port,
+        )
+
+    elif send == "cart":
+        # Publicar el mensaje en el topic "sensors/1"
+        publish.single(
+            "Kitchen.1/Cart.1/Set",
+            payload=JsonCart ,
+            qos=1,
+            hostname=broker_address,
+            port=port,
+        )
+
+    elif send == "m":
+        publish.multiple(
         messages,
         hostname=broker_address,
         port=port
     )
-
-    # Publicar el mensaje en el topic "sensors/1"
-    publish.single(
-        "Kitchen.1/Cooking.Station.1/Set",
-        payload=JsonCooking ,
-        qos=1,
-        hostname=broker_address,
-        port=port,
-    )
-
-    # Publicar el mensaje en el topic "sensors/1"
-    publish.single(
-        "Kitchen.1/Cart.1/Set",
-        payload=JsonCart ,
-        qos=1,
-        hostname=broker_address,
-        port=port,
-    )
+    
+    else: print("Error")
 
     count += 1
     print("iteration: ", count)
-
-    time.sleep(5) # Esperar 5 segundos antes de enviar los mensajes nuevamente
