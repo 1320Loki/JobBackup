@@ -1,25 +1,66 @@
+# LIBRERIAS UTILIZADAS
 import time
 import json
 import paho.mqtt.publish as publish
 
-# Configurar los parámetros de conexión
+# CODE ESSENCIALS
+count = 0
+
+# MQTT CONNECTION BROKER IP ADDRESS
 broker_address = "192.168.1.200"
 port = 1883
+#username = "user"
+#password = "password"
 
-# Definir los mensajes a enviar como objetos JSON
+# PUBLISH MULTIPLE MQTT MESSAGES
+cookingSet = {
+    "Temperature": 100, 
+    "Speed": 1, 
+    "Time": 5
+}
+
+cartSet = {
+    "Position": 2, 
+    "Side": 1, 
+}
+
 messages = [
     {"topic": "test/topic1", "payload": json.dumps({"id": 1, "message": "mensaje 1"}), "qos": 1},
     {"topic": "test/topic2", "payload": json.dumps({"id": 2, "message": "mensaje 2"}), "qos": 0},
     {"topic": "test/topic3", "payload": json.dumps({"id": 3, "message": "mensaje 3"}), "qos": 2},
 ]
 
-# Enviar los mensajes continuamente
+# Convertir el objeto JSON a una cadena de texto
+JsonCooking = json.dumps(cookingSet)
+JsonCart = json.dumps(cartSet)
+
+# LOOP
 while True:
     publish.multiple(
         messages,
         hostname=broker_address,
         port=port
     )
-    
-    print("ola")
+
+    # Publicar el mensaje en el topic "sensors/1"
+    publish.single(
+        "Kitchen.1/Cooking.Station.1/Set",
+        payload=JsonCooking ,
+        qos=1,
+        hostname=broker_address,
+        port=port,
+    )
+
+    # Publicar el mensaje en el topic "sensors/1"
+    publish.single(
+        "Kitchen.1/Cart.1/Set",
+        payload=JsonCart ,
+        qos=1,
+        hostname=broker_address,
+        port=port,
+    )
+
+    count += 1
+    print("iteration: ", count)
+
     time.sleep(5) # Esperar 5 segundos antes de enviar los mensajes nuevamente
