@@ -2,7 +2,7 @@ import paho.mqtt.client as mqtt
 
 def on_connect(client, userdata, flags, rc):
     print("MQTT connected "+ str(rc))
-    client.subscribe("ALSW/#")
+    client.subscribe("Kitchen.1/Cooking.Station.1")
 
 def on_message(client, userdata, msg):
     print(msg.topic + "" + str(msg.payload))
