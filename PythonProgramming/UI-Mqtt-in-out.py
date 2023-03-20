@@ -30,7 +30,7 @@ JsonCooking = json.dumps(cookingSet)
 JsonSpices = json.dumps(spicesSet)
 JsonCart = json.dumps(cartSet)
 
-
+# Functions for the buttons
 def funcion1():     # Set cooking
     print("Mqtt cooking msg")
 
