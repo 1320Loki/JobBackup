@@ -51,88 +51,11 @@ int invalue, outvalue;  //  Values
 
 int temperature, speed, time;
 bool mqttAction = false;
-
-//--------------------- Code essencials --------------------/
+//--------------------- Code essencials --------------------//
 
 //////////////////////////////////////////////////////////////////////////////
 /////////////////////////////  Created Funtions  /////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////////
-
-void reconnect() {
-
-  while (!mqttClient.connected()) {
-
-    Serial.print("Attempting MQTT connection...");
-    if (mqttClient.connect("")) {
-
-      Serial.println("connected");
-      //  topics subscribed to...
-      mqttClient.subscribe("Trial");  
-      mqttClient.subscribe("Kitchen.1/Cooking.Station.1/Set");       
-    }
-
-    else  {
-
-      Serial.print("failed, rc=");
-      Serial.print(mqttClient.state());
-      Serial.println(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
-      delay(5000);
-}  }  }
-
-//////////////////////////////////////////////////////////////////////////////
-
-void callback(char* topic, byte* message, unsigned int length)  {
-
-  Serial.print("Message arrived on topic: ");
-  Serial.println(topic);
-
-  Serial.print(". Message: ");
-  String messageTemp;
-  
-  for (int i = 0; i < length; i++) {
-    Serial.print((char)message[i]);
-    messageTemp += (char)message[i];
-  }
-
-  MqttInMsg = messageTemp;
-  Serial.println();
-
-  if (String(topic) == "Kitchen.1/Cooking.Station.1/Set") {
-
-    Serial.println("Kitchen.1/Cooking.Station.1/Set");
-
-    StaticJsonDocument<256> mensaje;
-    DeserializationError error = deserializeJson(mensaje, MqttInMsg);
-
-    if (error) {
-      
-      Serial.println("Error al deserializar el mensaje JSON: ");
-      Serial.println(error.c_str());
-      return;
-   }
-
-    temperature = mensaje["temperature"];
-    speed = mensaje["speed"];
-    time = mensaje["time"];
-
-    Serial.print("Temperature: ");
-    Serial.println(temperature);
-
-    Serial.print("Speed: ");
-    Serial.println(speed);
-
-    Serial.print("time: ");
-    Serial.println(time);
-
-    mqttAction = true;
-
-
-    mqttClient.publish("Kitchen.1/Cooking.Station.1/QsO1", "message received", true);
-
-}   }
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -150,16 +73,20 @@ void QuickButton(int i) {
 void StartButton() {
 
   delay(500);
+  Serial.println("Stat button");
+  delay(500);
   QuickButton(relay0);
   delay(100);
   QuickButton(relay3);
   delay(100);
+  Serial.println("Stat button end");
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 void ResetButton() {
 
+  Serial.println("Statting of reset");
   delay(500);
   counter1 = 0;
   
@@ -172,113 +99,100 @@ void ResetButton() {
   delay(2000);
   digitalWrite(relay6, LOW);
   delay(500);
+  Serial.println("Ending of reset");
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-void SpeedLvl(int speed) {
-  
-  Serial.println("Speed selected");
+void cookSet(int speed, int temperature, int time) {
+
+  Serial.print("Speed selected: ");
+  Serial.println(speed);
+
   QuickButton(relay1);
-  delay(500);
+  delay(150);
 
-  QuickButton(1);                       //  Set speed to 0
-  digitalWrite(relay4 , HIGH);          //  Set speed to 0
-  delay(1200);                          //  Set speed to 0
-  digitalWrite(relay4 , LOW);           //  Set speed to 0
-  delay(250);                           //  Set speed to 0
-
-  switch (speed)  {                     //  Speed levels ---> 0 1 2 3 4
+  switch (speed)  {     //  Speed levels ---> 0 1 2 3 4
  
-  case 0:
-    Serial.println("Set speed to 0");
-    break;
-  
-  case 1:
-    Serial.println("Set speed to 1");
-    for (int i=0; i<1; i++) { 
-      QuickButton(5);
-      delay(150);
-      }
-    break;
-
-  case 2:
-    Serial.println("Set speed to 1");
-    for (int i=0; i<2; i++) { 
-      QuickButton(5); 
-      delay(150);
-      }
-    break;
-
-  case 3:
-    Serial.println("Set speed to 1");
-    for (int i=0; i<3; i++) { 
-      QuickButton(5); 
-      delay(150);
-      }
-    break;
-
-  case 4:
-    Serial.println("Set speed to 1");
-    for (int i=0; i<4; i++) { 
-      QuickButton(5); 
-      delay(150);
-      }
-    break;
-
-} }
-
-//////////////////////////////////////////////////////////////////////////////
-
-void TempLvl(int temperature)  {
-  Serial.println("Temperature selected");
-  QuickButton(relay0);
-  delay(500);
-
-  QuickButton(relay0);                  //  Set temp to 0
-  digitalWrite(relay4, HIGH);           //  Set temp to 0
-  delay(2500);                          //  Set temp to 0
-  digitalWrite(relay4, LOW);            //  Set temp to 0
-  delay(150);                           //  Set temp to 0
-
-  switch (temperature) {
-
-  case 0:
-    Serial.println("Set temperature to 0");
-    break;
-  
-  case 60:
-    Serial.println("Set temperature to 60");
-    for (int i=0; i<4; i++) { 
-      QuickButton(relay5);
-      delay(150);
-      }
-    break;
-
-  case 100:
-    Serial.println("Set temperature to 100");
-    for (int i=0; i<8; i++) { 
-      QuickButton(relay5);
-      delay(150);
-      }
-    break;
+    case 0:
+      Serial.println("Set speed to 0");
+      break;
     
-  case 120:
-    Serial.println("Set temperature to 120");
-    for (int i=0; i<10; i++) { 
-      QuickButton(relay5);
-      delay(150);
-      }
-    break;
+    case 1:
+      Serial.println("Set speed to 1");
+      for (int i=0; i<1; i++) { 
+        QuickButton(relay5);
+        delay(150);
+        }
+      break;
 
-} }
+    case 2:
+      Serial.println("Set speed to 1");
+      for (int i=0; i<2; i++) { 
+        QuickButton(relay5); 
+        delay(150);
+        }
+      break;
 
-//////////////////////////////////////////////////////////////////////////////
+    case 3:
+      Serial.println("Set speed to 1");
+      for (int i=0; i<3; i++) { 
+        QuickButton(relay5); 
+        delay(150);
+        }
+      break;
 
-void TimeLvl(int time)  {
-  Serial.println("Time selected");
+    case 4:
+      Serial.println("Set speed to 1");
+      for (int i=0; i<4; i++) { 
+        QuickButton(relay5); 
+        delay(150);
+        }
+      break;
+  }
+
+  Serial.print("Temperature selected: ");
+  Serial.println(temperature);
+
+  QuickButton(relay0);
+  delay(100);
+
+  switch (temperature) {     //  Temperature levels ---> 0 60 100 120
+
+    case 0:
+      Serial.println("Set temperature to 0");
+      break;
+    
+    case 60:
+      Serial.println("Set temperature to 60");
+      for (int i=0; i<4; i++) { 
+        QuickButton(relay5);
+        delay(150);
+        }
+      break;
+
+    case 100:
+      Serial.println("Set temperature to 100");
+      for (int i=0; i<8; i++) { 
+        QuickButton(relay5);
+        delay(150);
+        }
+      break;
+      
+    case 120:
+      Serial.println("Set temperature to 120");
+      for (int i=0; i<10; i++) { 
+        QuickButton(relay5);
+        delay(150);
+        }
+      break;  
+  }
+
+  Serial.print("Time selected: ");
+  Serial.println(time);
+
   QuickButton(relay2);
-  delay(500);
+  delay(150);
 
   switch (time) {
 
@@ -338,35 +252,67 @@ void TimeLvl(int time)  {
     delay(150);                     
     QuickButton(relay4);    
     delay(150);  
-    break;      
-} }
+    break;  
+
+}   }
 
 //////////////////////////////////////////////////////////////////////////////
 
-void TriggerBuzzer () {
+void reconnect() {
 
-  delay(1000);
+  while (!mqttClient.connected()) {
 
-  for (;;)  {
+    Serial.print("Attempting MQTT connection...");
+    if (mqttClient.connect("")) {
 
-    BuzzerValue = analogRead(BuzzerPin);
-    Serial.println(counter1);
-    Serial.println(BuzzerValue);
+      Serial.println("connected");
+      //  topics subscribed to...
+      mqttClient.subscribe("Trial");  
+      mqttClient.subscribe("Kitchen.1/Cooking.Station.1/Set");       
+    }
 
-    if (BuzzerValue < 800)  { 
-      counter1++;
+    else  {
 
-      if (counter1 >= 3){
+      Serial.print("failed, rc=");
+      Serial.print(mqttClient.state());
+      Serial.println(" try again in 5 seconds");
+      // Wait 5 seconds before retrying
+      delay(5000);
+}  }  }
 
-        Serial.println("STOPING BUZZ DETECTED... RESTETING Soon");
-        delay(1000);
-        ResetButton();
-        delay(100);
-        break;
-      } }
+//////////////////////////////////////////////////////////////////////////////
 
-  delay(100); 
-} }
+void callback(char* topic, byte* message, unsigned int length)  {
+
+  Serial.print("Message arrived on topic: ");
+  Serial.println(topic);
+
+  Serial.print(". Message: ");
+  String messageTemp;
+
+  if (String(topic) == "Kitchen.1/Cooking.Station.1/Set") {
+
+    Serial.println("Kitchen.1/Cooking.Station.1/Set");
+
+    StaticJsonDocument<256> doc;
+    deserializeJson(doc, message, length);  // Deserializa  JSON
+
+    temperature = doc["Temperature"];
+    speed = doc["Speed"];
+    time = doc["Time"];
+
+    Serial.print("Temperature: ");
+    Serial.println(temperature);
+
+    Serial.print("Speed: ");
+    Serial.println(speed);
+
+    Serial.print("time: ");
+    Serial.println(time);
+
+    mqttAction = true;
+
+}   }
 
 //////////////////////////////////////////////////////////////////////////////
 /////////////////////////////  Created Funtions  /////////////////////////////
@@ -386,49 +332,40 @@ void setup() {
   mqttClient.setServer(server, 1883);
   mqttClient.setCallback(callback);
 
-  delay(3000);
+  delay(1500);
 
   Serial.begin(9600);
-  Serial.println("skibidi dob dob dob");
 
-  delay(1000);
 }
 
 void loop() {
 
-  mqttClient.loop();
   current = millis();
   
   if (!mqttClient.connected()) {  reconnect(); }
+  //cookSet(speed, temperature, time);
 
-  
   if(current - start >= period1) {
 
-    Serial.println("yes");
-
-    Serial.print("time: ");
     Serial.println(time);
-    
+
     if(mqttAction == true){
 
-      Serial.print("TEMP: ");
-      Serial.println(temperature);
-
-      Serial.print("SPEED: ");
-      Serial.println(speed);
-
-      Serial.print("TIME: ");
-      Serial.println(time);
-
       ResetButton();
+
+      cookSet(speed, temperature, time);
+
+      StartButton();
+
       mqttAction = false;
-     
+
+      Serial.println("a");
     }
 
     start = millis();
   }
-
   mqttClient.loop();
+
 }
 
 /*
@@ -443,6 +380,6 @@ relay6 = 3  = rs  = Reset
 
 TimeLvl(time);              //  Values (0 1 3 5 10 30 60 99)
 SpeedLvl(speed);            //  Values (0 1 2 3 4)
-TempLvl(temperature);       //  Values (0 60 100 120)         
+TempLvl(temperature);       //  Values (0 60 100 120)      
 
 */
