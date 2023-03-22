@@ -29,8 +29,8 @@ const unsigned long period2 = 500;    //
 //--------------------- Code essencials --------------------//
  
 //  WIFI CONNECTIONS
-const char* ssid = "TP-Link_4676"; //  "JosePC";
-const char* password = "30312463";      //  "esp32wish";
+const char* ssid = "JosePC";             //  "JosePC";       "TP-Link_4676";
+const char* password = "esp32wish";      //  "esp32wish";    "30312463"; 
 
 #define TrialTopic "Trial"              //  Callback
 #define mqtt_server "192.168.0.115"     //  IP of MQTT BROKER     "192.168.1.200"
