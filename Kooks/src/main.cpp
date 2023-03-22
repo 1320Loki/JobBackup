@@ -8,7 +8,7 @@ const unsigned long period1 = 1000;   //
 const unsigned long period2 = 500;    //
 //--------------------- Milis function ---------------------//
 
-int out[] = {2,3,4,5,6,7,8,9,10};
+int out[] = {2,3,4,5,6,7};
 int a = 0;
 //--------------------- Code essencials --------------------//
 
@@ -91,8 +91,7 @@ void loop() {
 
   current = millis();
 
-  if(current - start >= period1)
-  {
+  if(current - start >= period1)  {
     a++;
     Serial.print("CONTADOR ");
     Serial.println(a);
@@ -100,19 +99,23 @@ void loop() {
     if( a == 5) { TeaRecipe(0,1,2,3,4,5);}
 
     start = millis();
-  }
-
-}
+  } }
 
 /*
 
 out[0] = 2  = tp  = Temperature
 out[1] = 3  = sp  = Speed
 out[2] = 4  = tm  = Time
-out[3] = 5  = st  = Play
+out[3] = 5  = st  = Start
 out[4] = 6  = mn  = Minus
-out[5] = 7  = ps  = Pluse
-out[6] = 8  = rs  = Reset
-out[7] = 9  = pu  = Pulse
+out[5] = 7  = ps  = Plus
+
+Speed Limits ----> 0 to 4
+  Space 1
+Time Limits ----> 0:00 to 99:00
+  10 20 30 40 50 60
+  30segd
+Temp Limits ----> 0 to 120
+  0 30 40 50 60 70 80 90 100 110 120
 
 */

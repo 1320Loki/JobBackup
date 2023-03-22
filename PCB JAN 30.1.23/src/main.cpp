@@ -19,14 +19,14 @@
 int l2=2;
 
 //  MOTOR 1 PINS
-#define In1 19   
-#define In2 18
-#define ENA 5
+#define In1 0   
+#define In2 4
+#define ENA 16
 
 //  MOTOR 2 PINS
-#define ENB 16
-#define In3 17  
-#define In4 4
+#define ENB 5
+#define In3 18  
+#define In4 19
 
 //  POSITIONING
 
