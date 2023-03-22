@@ -33,7 +33,7 @@ const char* ssid = "JosePC";             //  "JosePC";       "TP-Link_4676";
 const char* password = "esp32wish";      //  "esp32wish";    "30312463"; 
 
 #define TrialTopic "Trial"              //  Callback
-#define mqtt_server "192.168.0.115"     //  IP of MQTT BROKER     "192.168.1.200"
+#define mqtt_server "192.168.1.200"     //  IP of MQTT BROKER "192.168.1.200" "192.168.0.115"
 WiFiClient Car1;                        //  MQTT CLIENT
 PubSubClient client(Car1);              //  Must CHANGE 4 every device
 
@@ -61,6 +61,7 @@ int Side = 0;                       //  Side of tilting. left = 1. Right = 2.
 int Pos = 0;                        //  Cart Positions.  Values are 1-3 
 
 bool Returning = false;             //  Returning state
+bool mqttAction = false;            //  Msg arrives validation
 int BtCont = 0, valid = 0;          //  Validation for the Buton algorithm
 int BtState = 0, LastBtState = 0;   //  State pf the buttons
 
@@ -117,7 +118,8 @@ void reconnect() {
     if (client.connect("")) {
 
       Serial.println("connected");
-      client.subscribe("Trial");        //  topics subscribed to...
+      client.subscribe("Trial");       
+      client.subscribe("Kitchen.1/Cart.1/Set"); 
       digitalWrite(l2, LOW );
     }
 
@@ -134,57 +136,31 @@ void reconnect() {
 void callback(char* topic, byte* message, unsigned int length)  {
 
   Serial.print("Message arrived on topic: ");
-  Serial.print(topic);
+  Serial.println(topic);
+
   Serial.print(". Message: ");
   String messageTemp;
   
-  for (int i = 0; i < length; i++) {
-    Serial.print((char)message[i]);
-    messageTemp += (char)message[i];
-  }
-
   MqttInMsg = messageTemp;
   Serial.println();
 
-  if (String(topic) == "Trial") {
+  if (String(topic) == "Kitchen.1/Cart.1/Set") {
 
-    Serial.println("Trial arrived");
+    Serial.println("TOPIC ---> Kitchen.1/Cart.1/Set");
 
-    if (MqttInMsg == "3L" || MqttInMsg == "3l" )  { 
-      Serial.println("3L msg bien");
-      Side = 1;
-      Pos = 3;
-    }
+    StaticJsonDocument<256> doc;
+    deserializeJson(doc, message, length);  // Deserializa  JSON
 
-    if (MqttInMsg == "3R" || MqttInMsg == "3r" )  { 
-      Serial.println("3R msg bien"); 
-      Side = 2;
-      Pos = 3;
-    }
+    Pos = doc["Position"];
+    Side = doc["Side"];
 
-    if (MqttInMsg == "2L" || MqttInMsg == "2l" )  { 
-      Serial.println("2L msg bien");
-      Side = 1;
-      Pos = 2;
-    }
+    Serial.print("Position: ");
+    Serial.println(Pos);
 
-    if (MqttInMsg == "2R" || MqttInMsg == "2r" )  { 
-      Serial.println("2R msg bien");
-      Side = 2;
-      Pos = 2;
-    }
+    Serial.print("Side: ");
+    Serial.println(Side);
 
-    if (MqttInMsg == "1L" || MqttInMsg == "1l" )  { 
-      Serial.println("1L msg bien");
-      Side = 1;
-      Pos = 1;
-    }
-
-    if (MqttInMsg == "1R" || MqttInMsg == "1r" )  { 
-      Serial.println("1R msg bien");
-      Side = 2;
-      Pos = 1;
-    }
+    mqttAction = true;
 
 }   }
 
@@ -192,11 +168,12 @@ void Alive()  {
 
   StaticJsonDocument<80> doc2;                 //  JSON static DOC
   char output[80];
-  doc2["Status"] = "Alive";
+  doc2["Status"] = "Online";
+  doc2["Postion"] = "P0";
 
   serializeJson(doc2, output);                 //  Json serialization
   Serial.println(output); 
-  client.publish("Cart Status", output);       //  MQTT publishing
+  client.publish("Kitchen.1/Cart.1/Status/FullSatus", output);       //  MQTT publishing
 }
 //  __________________________  WIFI Connects   __________________________  //
 
@@ -263,13 +240,6 @@ void MotorIdle() {
 
   digitalWrite(l2, LOW);
 
- StaticJsonDocument<80> Position;                 //  JSON static DOC
-  char output[80];
-  Position["Postion"] = "P0";
-
-  serializeJson(Position, output);                 //  Json serialization
-  Serial.println(output); 
-  client.publish("Cart 1.1 postion", output);           //  MQTT publishing 
 }
 //  __________________________  Motor commands  __________________________  //
 
@@ -282,6 +252,9 @@ void GoTo (int valid, int Pos, int Side) {
     Serial.println(Pos);
     Serial.print("Valor del lado = ");
     Serial.println(Side);
+
+    StaticJsonDocument<80> PJson;                 //  JSON static DOC
+    char output[80];
 
     switch (Pos) {
 
@@ -323,6 +296,13 @@ void GoTo (int valid, int Pos, int Side) {
             if(Side == 1) { servoLeft(); }
             else if(Side == 2) { servoRight(); }
 
+            //    json    //
+            PJson["Postion"] = "P3";
+            serializeJson(PJson, output);
+            Serial.println(output); 
+            client.publish("Kitchen.1/Cart.1/Status/Position", output);
+            //    json    //
+
             delay(1000);
             servoReset();
 
@@ -335,6 +315,14 @@ void GoTo (int valid, int Pos, int Side) {
             Returning = false;
             Pos = 0;
             Serial.println("P inicial");
+
+            //    json    //
+            PJson["Postion"] = "P0";
+            serializeJson(PJson, output);
+            Serial.println(output); 
+            client.publish("Kitchen.1/Cart.1/Status/Position", output);
+            //    json    //
+
             MotorIdle();
             break;
           }   
@@ -383,6 +371,13 @@ void GoTo (int valid, int Pos, int Side) {
             if(Side == 1) { servoLeft(); }
             else if(Side == 2) { servoRight(); }
 
+            //    json    //
+            PJson["Postion"] = "P2";
+            serializeJson(PJson, output);
+            Serial.println(output); 
+            client.publish("Kitchen.1/Cart.1/Status/Position", output);
+            //    json    //
+
             delay(1000);
             servoReset();
 
@@ -395,6 +390,14 @@ void GoTo (int valid, int Pos, int Side) {
             Returning = false;
             Pos = 0;
             Serial.println("P inicial");
+
+            //    json    //
+            PJson["Postion"] = "P0";
+            serializeJson(PJson, output);
+            Serial.println(output); 
+            client.publish("Kitchen.1/Cart.1/Status/Position", output);
+            //    json    //
+
             MotorIdle();
             break;
           }   
@@ -443,6 +446,13 @@ void GoTo (int valid, int Pos, int Side) {
             if(Side == 1) { servoLeft(); }
             else if(Side == 2) { servoRight(); }
 
+            //    json    //
+            PJson["Postion"] = "P1";
+            serializeJson(PJson, output);
+            Serial.println(output); 
+            client.publish("Kitchen.1/Cart.1/Status/Position", output);
+            //    json    //
+
             delay(1000);
             servoReset();
 
@@ -455,6 +465,14 @@ void GoTo (int valid, int Pos, int Side) {
             Returning = false;
             Pos = 0;
             Serial.println("P inicial");
+
+            //    json    //
+            PJson["Postion"] = "P0";
+            serializeJson(PJson, output);
+            Serial.println(output); 
+            client.publish("Kitchen.1/Cart.1/Status/Position", output);
+            //    json    //
+
             MotorIdle();
             break;
           }   
