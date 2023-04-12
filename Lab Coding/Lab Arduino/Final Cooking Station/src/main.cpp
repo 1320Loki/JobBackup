@@ -19,8 +19,8 @@ https://patorjk.com/software/taag/#p=display&f=Big&t=MQTT%20COOKING
 
 //--------------------- Ethernet / MQTT --------------------//
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-IPAddress server(192, 168, 0, 115);
-IPAddress ip(192, 168, 0, 164);
+IPAddress server(192, 168, 0, 50);
+IPAddress ip(192, 168, 0, 2);
    
 EthernetClient CookStation1;
 PubSubClient mqttClient(CookStation1);
@@ -51,6 +51,8 @@ int invalue, outvalue;  //  Values
 
 int temperature, speed, time;
 bool mqttAction = false;
+
+int cont = 0;
 //--------------------- Code essencials --------------------//
 
 //////////////////////////////////////////////////////////////////////////////
@@ -288,9 +290,8 @@ void callback(char* topic, byte* message, unsigned int length)  {
   Serial.println(topic);
 
   Serial.print(". Message: ");
-  String messageTemp;
 
-  if (String(topic) == "Kitchen.1/Cooking.Station.1/Set") {
+  if (String(topic).equalsIgnoreCase("Kitchen.1/Cooking.Station.1/Set")) {   //  important!!!
 
     Serial.println("Kitchen.1/Cooking.Station.1/Set");
 
@@ -313,6 +314,27 @@ void callback(char* topic, byte* message, unsigned int length)  {
     mqttAction = true;
 
 }   }
+
+//////////////////////////////////////////////////////////////////////////////
+
+void Online()  {
+
+  StaticJsonDocument<80> msgout;                 //  JSON static DOC
+  char output[80];
+  msgout["Status"] = "Online";
+  msgout["temperature"] = temperature;
+  msgout["speed"] = speed;
+  msgout["time"] = time;
+
+  //speed, temperature, time)
+
+  String jsonStr;
+
+  serializeJson(msgout, jsonStr);                 //  Json serialization
+  Serial.println(output); 
+  mqttClient.publish("Kitchen.1/Cooking.Station.1/FullSatus", jsonStr.c_str());       //  MQTT publishing
+
+}
 
 //////////////////////////////////////////////////////////////////////////////
 /////////////////////////////  Created Funtions  /////////////////////////////
@@ -347,8 +369,13 @@ void loop() {
 
   if(current - start >= period1) {
 
-    Serial.println(time);
+    cont++;
 
+    if(cont == 10){
+      Online();
+      cont = 0;
+    }
+    
     if(mqttAction == true){
 
       ResetButton();
@@ -358,8 +385,7 @@ void loop() {
       StartButton();
 
       mqttAction = false;
-
-      Serial.println("a");
+      Online();
     }
 
     start = millis();
@@ -376,6 +402,7 @@ relay3 = 6  = st  = Play
 relay4 = 5  = mn  = Minus
 relay5 = 4  = ps  = Plus
 relay6 = 3  = rs  = Reset
+
 TimeLvl(time);              //  Values (0 1 3 5 10 30 60 99)
 SpeedLvl(speed);            //  Values (0 1 2 3 4)
 TempLvl(temperature);       //  Values (0 60 100 120)      
