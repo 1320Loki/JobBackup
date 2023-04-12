@@ -482,7 +482,7 @@ void GoTo (int valid, int Pos, int Side) {
 
         break;
       }
-//
+
     }                   //    Switch case
   
   
