@@ -6,7 +6,7 @@ import tkinter as tk
 import json
 
 # MQTT CONNECTION BROKER IP ADDRESS
-broker_address = "192.168.1.200"
+broker_address = "192.168.0.50"
 port = 1883
 
 # CREATION OF MQTT MESAGGES
