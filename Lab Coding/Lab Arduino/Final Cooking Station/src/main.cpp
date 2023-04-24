@@ -55,6 +55,20 @@ bool mqttAction = false;
 int cont = 0;
 //--------------------- Code essencials --------------------//
 
+/*
+relay0 = 9  = tp  = Temperature
+relay1 = 8  = sp  = Speed
+relay2 = 7  = tm  = Time
+relay3 = 6  = st  = Play
+relay4 = 5  = mn  = Minus
+relay5 = 4  = ps  = Plus
+relay6 = 3  = rs  = Reset
+
+TimeLvl(time);              //  Values (0 1 3 5 10 30 60 99)
+SpeedLvl(speed);            //  Values (0 1 2 3 4)
+TempLvl(temperature);       //  Values (0 60 100 120)      
+*/
+
 //////////////////////////////////////////////////////////////////////////////
 /////////////////////////////  Created Funtions  /////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
@@ -393,17 +407,3 @@ void loop() {
   mqttClient.loop();
 
 }
-
-/*
-relay0 = 9  = tp  = Temperature
-relay1 = 8  = sp  = Speed
-relay2 = 7  = tm  = Time
-relay3 = 6  = st  = Play
-relay4 = 5  = mn  = Minus
-relay5 = 4  = ps  = Plus
-relay6 = 3  = rs  = Reset
-
-TimeLvl(time);              //  Values (0 1 3 5 10 30 60 99)
-SpeedLvl(speed);            //  Values (0 1 2 3 4)
-TempLvl(temperature);       //  Values (0 60 100 120)      
-*/
