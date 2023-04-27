@@ -20,10 +20,10 @@ https://patorjk.com/software/taag/#p=display&f=Big&t=MQTT%20COOKING
 //--------------------- Ethernet / MQTT --------------------//
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 IPAddress server(192, 168, 0, 50);
-IPAddress ip(192, 168, 0, 2);
+IPAddress ip(192, 168, 0, 25);                 //  change
    
-EthernetClient CookStation1;
-PubSubClient mqttClient(CookStation1);
+EthernetClient CookStation3;                  //  change
+PubSubClient mqttClient(CookStation3);        //  change
 
 String MqttInMsg;
 //--------------------- Ethernet / MQTT --------------------//
@@ -31,18 +31,18 @@ String MqttInMsg;
 //--------------------- Milis function ---------------------//
 unsigned long start;                  // Estructura De millis
 unsigned long current, current2;      // Estructura De millis
-const unsigned long period1 = 500;    // Estructura De millis
+const unsigned long period1 = 250;    // Estructura De millis
 const unsigned long period2 = 500;    // Estructura De millis
 //--------------------- Milis function ---------------------//
 
 //--------------------- Buttons outputs --------------------//
 const int relay0=9, relay1=8, relay2=7, relay3=6;
-const int relay4=5, relay5=4, relay6=3;
+const int relay4=5, relay5=3, relay6=2;
 //--------------------- Buttons outputs --------------------//
 
 //--------------------- Code essencials --------------------//
 int counter1 = 0;       //  Setting Up Counters
-int BuzzerPin = A5;     //  Buzzer Analog ReadPin
+int BuzzerCont = 0;     //  Buzzer Counter
 int BuzzerValue;        //  Buzzer Analog Value
 
 int InSignal = A1;      //  Signal to Start Cooking Process
@@ -51,9 +51,11 @@ int invalue, outvalue;  //  Values
 
 int temperature, speed, time;
 bool mqttAction = false;
+bool cooking = false;
 
 int cont = 0;
 //--------------------- Code essencials --------------------//
+
 
 /*
 relay0 = 9  = tp  = Temperature
@@ -61,8 +63,10 @@ relay1 = 8  = sp  = Speed
 relay2 = 7  = tm  = Time
 relay3 = 6  = st  = Play
 relay4 = 5  = mn  = Minus
-relay5 = 4  = ps  = Plus
-relay6 = 3  = rs  = Reset
+relay5 = 3  = ps  = Plus
+relay6 = 2  = rs  = Reset
+
+A5 = Buzzer Pin
 
 TimeLvl(time);              //  Values (0 1 3 5 10 30 60 99)
 SpeedLvl(speed);            //  Values (0 1 2 3 4)
@@ -96,6 +100,7 @@ void StartButton() {
   QuickButton(relay3);
   delay(100);
   Serial.println("Stat button end");
+  cooking = true;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -213,7 +218,7 @@ void cookSet(int speed, int temperature, int time) {
   switch (time) {
 
   case 1:     //  1 minutes
-    Serial.println("Set temp to 0");
+    Serial.println("Set temp to 1");
     QuickButton(relay2);                       
     digitalWrite(relay5, HIGH);           
     delay(1700);                       
@@ -222,7 +227,7 @@ void cookSet(int speed, int temperature, int time) {
     break;
 
   case 3:     //  3 minutes
-    Serial.println("Set temp to 0");
+    Serial.println("Set temp to 3");
     QuickButton(relay2);                       
     digitalWrite(relay5, HIGH);           
     delay(2500);                       
@@ -231,7 +236,7 @@ void cookSet(int speed, int temperature, int time) {
     break;
 
   case 5:     //  5 minutes
-    Serial.println("Set temp to 0");
+    Serial.println("Set temp to 5");
     QuickButton(relay2);                       
     digitalWrite(relay5, HIGH);           
     delay(3200);                       
@@ -240,6 +245,7 @@ void cookSet(int speed, int temperature, int time) {
     break;
   
   case 10:    //  10 Minutes
+    Serial.println("Set temp to 10");
     QuickButton(relay2);                       
     digitalWrite(relay5, HIGH);           
     delay(5200);                       
@@ -248,6 +254,7 @@ void cookSet(int speed, int temperature, int time) {
     break;   
 
   case 30:    //  30 Minutes
+    Serial.println("Set temp to 30");
     QuickButton(relay2);                       
     digitalWrite(relay5, HIGH);           
     delay(13200);                       
@@ -256,6 +263,7 @@ void cookSet(int speed, int temperature, int time) {
     break;    
 
   case 60:    //  60 Minutes
+    Serial.println("Set temp to 60");
     QuickButton(relay2);                       
     digitalWrite(relay4, HIGH);           
     delay(16200);                       
@@ -264,6 +272,7 @@ void cookSet(int speed, int temperature, int time) {
     break;  
        
   case 99:    //  99 Minutes
+    Serial.println("Set temp to 99");
     QuickButton(relay2);   
     delay(150);                     
     QuickButton(relay4);    
@@ -284,7 +293,7 @@ void reconnect() {
       Serial.println("connected");
       //  topics subscribed to...
       mqttClient.subscribe("Trial");  
-      mqttClient.subscribe("Kitchen.1/Cooking.Station.1/Set");       
+      mqttClient.subscribe("In/Cooking_1/Set");       
     }
 
     else  {
@@ -305,9 +314,8 @@ void callback(char* topic, byte* message, unsigned int length)  {
 
   Serial.print(". Message: ");
 
-  if (String(topic).equalsIgnoreCase("Kitchen.1/Cooking.Station.1/Set")) {   //  important!!!
-
-    Serial.println("Kitchen.1/Cooking.Station.1/Set");
+  if (String(topic).equalsIgnoreCase("In/Cooking_1/Set")) {    //  change
+    Serial.println("In/Cooking_1/Set");                        //  change
 
     StaticJsonDocument<256> doc;
     deserializeJson(doc, message, length);  // Deserializa  JSON
@@ -339,6 +347,7 @@ void Online()  {
   msgout["temperature"] = temperature;
   msgout["speed"] = speed;
   msgout["time"] = time;
+  msgout["Cooking"] = cooking;
 
   //speed, temperature, time)
 
@@ -346,7 +355,7 @@ void Online()  {
 
   serializeJson(msgout, jsonStr);                 //  Json serialization
   Serial.println(output); 
-  mqttClient.publish("Kitchen.1/Cooking.Station.1/FullSatus", jsonStr.c_str());       //  MQTT publishing
+  mqttClient.publish("Out/Cooking_1/Status", jsonStr.c_str());       //  MQTT publishing
 
 }
 
@@ -363,6 +372,9 @@ void setup() {
   pinMode(relay4, OUTPUT);  //  Minus
   pinMode(relay5, OUTPUT);  //  Plus
   pinMode(relay6, OUTPUT);  //  Reset
+
+  pinMode(A5, INPUT);
+  delay(500);
 
   Ethernet.begin(mac, ip);
   mqttClient.setServer(server, 1883);
@@ -385,6 +397,11 @@ void loop() {
 
     cont++;
 
+    BuzzerValue = analogRead(A5);
+    Serial.println(BuzzerValue);
+    if(BuzzerValue < 700) { BuzzerCont++;}
+    if(BuzzerCont >= 3) { cooking = false;}
+
     if(cont == 10){
       Online();
       cont = 0;
@@ -397,9 +414,11 @@ void loop() {
       cookSet(speed, temperature, time);
 
       StartButton();
+      delay(100);
 
       mqttAction = false;
       Online();
+      BuzzerCont = 0;
     }
 
     start = millis();
