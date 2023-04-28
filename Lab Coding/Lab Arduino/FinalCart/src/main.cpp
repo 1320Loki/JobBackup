@@ -29,11 +29,11 @@ const unsigned long period2 = 500;    //
 //--------------------- Code essencials --------------------//
  
 //  WIFI CONNECTIONS
-const char* ssid = "JosePC";             //  "JosePC";       "TP-Link_4676";
-const char* password = "esp32wish";      //  "esp32wish";    "30312463"; 
+const char* ssid = "cook4me";             //  "JosePC";       "TP-Link_4676";
+const char* password = "fernao2023";      //  "esp32wish";    "30312463"; 
 
 #define TrialTopic "Trial"              //  Callback
-#define mqtt_server "192.168.1.200"     //  IP of MQTT BROKER "192.168.1.200" "192.168.0.115"
+#define mqtt_server "192.168.0.50"      //  IP of MQTT BROKER "192.168.1.200" "192.168.0.115"
 WiFiClient Car1;                        //  MQTT CLIENT
 PubSubClient client(Car1);              //  Must CHANGE 4 every device
 
@@ -90,6 +90,8 @@ void conex()  {
   WiFi.disconnect();
   
   delay(2000);
+
+  IPAddress staticIP(192,168,0,60);
   WiFi.begin(ssid, password);
   int wific = 0;
   
