@@ -22,8 +22,8 @@ byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 IPAddress server(192, 168, 0, 50);
 IPAddress ip(192, 168, 0, 25);                 //  change
    
-EthernetClient CookStation3;                  //  change
-PubSubClient mqttClient(CookStation3);        //  change
+EthernetClient CookStation1;                  //  change
+PubSubClient mqttClient(CookStation1);        //  change
 
 String MqttInMsg;
 //--------------------- Ethernet / MQTT --------------------//
